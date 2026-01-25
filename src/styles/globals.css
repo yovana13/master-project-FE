@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --bg: #fff;
   --fg: #111;
@@ -15,7 +19,6 @@ body {
 }
 
 main {
-  max-width: 780px;
-  margin: 48px auto;
+  margin: 48px 30px;
   padding: 0 16px;
 }
