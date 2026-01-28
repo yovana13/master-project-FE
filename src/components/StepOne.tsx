@@ -1,15 +1,20 @@
 import { useState } from 'react';
+import { CITIES_BULGARIA } from '../constants/cities';
 
 interface StepOneProps {
   userId: string | null;
   displayName: string;
   setDisplayName: (value: string) => void;
+  gender: string;
+  setGender: (value: string) => void;
   bio: string;
   setBio: (value: string) => void;
-  serviceRadiusKm: string;
-  setServiceRadiusKm: (value: string) => void;
+  address: string;
+  setAddress: (value: string) => void;
   profileImage: File | null;
   setProfileImage: (file: File | null) => void;
+  cities: string[];
+  setCities: (cities: string[]) => void;
   onNext: () => void;
   setError: (error: string) => void;
   setIsLoading: (loading: boolean) => void;
@@ -20,22 +25,41 @@ export default function StepOne({
   userId,
   displayName,
   setDisplayName,
+  gender,
+  setGender,
   bio,
   setBio,
-  serviceRadiusKm,
-  setServiceRadiusKm,
+  address,
+  setAddress,
   profileImage,
   setProfileImage,
+  cities,
+  setCities,
   onNext,
   setError,
   setIsLoading,
   isLoading
 }: StepOneProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setProfileImage(e.target.files[0]);
     }
   };
+
+  const handleCityToggle = (cityKey: string) => {
+    if (cities.includes(cityKey)) {
+      setCities(cities.filter(c => c !== cityKey));
+    } else {
+      setCities([...cities, cityKey]);
+    }
+  };
+
+  const filteredCities = Object.entries(CITIES_BULGARIA).filter(([key, value]) =>
+    key.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    value.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,6 +72,11 @@ export default function StepOne({
       return;
     }
 
+    if (cities.length === 0) {
+      setError('Please select at least one city');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -55,8 +84,9 @@ export default function StepOne({
       // Create FormData for file upload
       const formData = new FormData();
       formData.append('display_name', displayName);
+      formData.append('gender', gender);
       formData.append('bio', bio);
-      formData.append('service_radius_km', serviceRadiusKm);
+      formData.append('address', address);
       if (profileImage) {
         formData.append('profileImage', profileImage);
       }
@@ -77,6 +107,23 @@ export default function StepOne({
       }
 
       console.log('Tasker profile created successfully');
+
+      // Submit cities
+      const citiesResponse = await fetch(`http://localhost:3007/users/${userId}/cities`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ cities }),
+      });
+
+      if (!citiesResponse.ok) {
+        const error = await citiesResponse.json().catch(() => ({ message: 'Failed to save cities' }));
+        throw new Error(error.message || 'Failed to save cities');
+      }
+
+      console.log('Cities saved successfully');
       
       // Move to next step after successful save
       onNext();
@@ -105,6 +152,24 @@ export default function StepOne({
             placeholder="Your professional name"
           />
         </div>
+
+        <div>
+          <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
+            Gender
+          </label>
+          <select
+            id="gender"
+            name="gender"
+            required
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+          >
+            <option value="">Select gender</option>
+            <option value="male">male</option>
+            <option value="female">female</option>
+          </select>
+        </div>
         
         <div>
           <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
@@ -123,22 +188,59 @@ export default function StepOne({
         </div>
 
         <div>
-          <label htmlFor="serviceRadiusKm" className="block text-sm font-medium text-gray-700 mb-1">
-            Service Radius (km)
+          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+            Address
           </label>
           <input
-            id="serviceRadiusKm"
-            name="serviceRadiusKm"
-            type="number"
-            min="0"
-            step="0.1"
+            id="address"
+            name="address"
+            type="text"
             required
-            value={serviceRadiusKm}
-            onChange={(e) => setServiceRadiusKm(e.target.value)}
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
             className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="10"
+            placeholder="Your address"
           />
-          <p className="mt-1 text-xs text-gray-500">How far are you willing to travel for tasks?</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Cities *
+          </label>
+          <p className="text-xs text-gray-500 mb-2">Select the cities where you're willing to work</p>
+          
+          <input
+            type="text"
+            placeholder="Search cities..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm mb-2"
+          />
+          
+          <div className="border border-gray-300 rounded-md max-h-60 overflow-y-auto">
+            {filteredCities.map(([key, value]) => (
+              <label
+                key={key}
+                className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={cities.includes(key)}
+                  onChange={() => handleCityToggle(key)}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-900">
+                  {key} ({value})
+                </span>
+              </label>
+            ))}
+          </div>
+          
+          {cities.length > 0 && (
+            <p className="mt-2 text-xs text-gray-600">
+              Selected {cities.length} {cities.length === 1 ? 'city' : 'cities'}
+            </p>
+          )}
         </div>
 
         <div>

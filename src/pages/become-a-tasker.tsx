@@ -4,13 +4,16 @@ import { AuthContext } from '../context/authContext';
 import Stepper from '../components/Stepper';
 import StepOne from '../components/StepOne';
 import StepTwo from '../components/StepTwo';
+import StepThree from '../components/StepThree';
 
 export default function BecomeATasker() {
   const [currentStep, setCurrentStep] = useState(1);
   const [displayName, setDisplayName] = useState('');
+  const [gender, setGender] = useState('');
   const [bio, setBio] = useState('');
-  const [serviceRadiusKm, setServiceRadiusKm] = useState('');
+  const [address, setAddress] = useState('');
   const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [cities, setCities] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
@@ -72,6 +75,11 @@ export default function BecomeATasker() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
+  const handleComplete = () => {
+    // Profile creation complete, redirect to home
+    router.push('/');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -102,12 +110,16 @@ export default function BecomeATasker() {
                 userId={userId}
                 displayName={displayName}
                 setDisplayName={setDisplayName}
+                gender={gender}
+                setGender={setGender}
                 bio={bio}
                 setBio={setBio}
-                serviceRadiusKm={serviceRadiusKm}
-                setServiceRadiusKm={setServiceRadiusKm}
+                address={address}
+                setAddress={setAddress}
                 profileImage={profileImage}
                 setProfileImage={setProfileImage}
+                cities={cities}
+                setCities={setCities}
                 onNext={handleNextStep}
                 setError={setError}
                 setIsLoading={setIsLoading}
@@ -127,25 +139,14 @@ export default function BecomeATasker() {
             )}
 
             {currentStep === 3 && (
-              <div className="mt-8 space-y-6">
-                <p className="text-center text-gray-600">Step 3 - Coming soon</p>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={handlePrevStep}
-                    className="flex-1 py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Back() => router.push('/')}
-                    className="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    Finish
-                    disabled={isLoading}
-                    className="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-                  >
-                    {isLoading ? 'Saving...' : 'Complete Profile'}
-                  </button>
-                </div>
-              </div>
+              <StepThree
+                userId={userId}
+                onBack={handlePrevStep}
+                onComplete={handleComplete}
+                setError={setError}
+                setIsLoading={setIsLoading}
+                isLoading={isLoading}
+              />
             )}
 
             {error && (
