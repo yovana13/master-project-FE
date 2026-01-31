@@ -114,11 +114,79 @@ export default function BookService() {
     }
   };
 
-  const handleBookingConfirm = (taskerId: number, selectedSlot: { start: string; end: string }) => {
-    console.log('Booking confirmed:', { taskerId, selectedSlot });
-    // TODO: Implement actual booking creation API call
-    // For now, just log the booking details
-    alert(`Booking confirmed!\nTasker: ${selectedTasker?.display_name}\nTime: ${new Date(selectedSlot.start).toLocaleString()} - ${new Date(selectedSlot.end).toLocaleString()}`);
+  const handleBookingConfirm = async (taskerId: number, selectedSlot: { start: string; end: string }) => {
+    if (!bookingData || !selectedTasker || !userId) {
+      alert('Missing required booking information');
+      return;
+    }
+
+    try {
+      // Calculate price based on pricing model
+      let priceCents = 0;
+      
+      if (bookingData.pricingModel === 'hourly') {
+        const hours = parseFloat(bookingData.hours || '1');
+        const hourlyRate = selectedTasker.hourly_rate || 0;
+        priceCents = Math.round(hourlyRate * hours * 100);
+        console.log('Hourly pricing:', { hours, hourlyRate, priceCents });
+      } else if (bookingData.pricingModel === 'sq_m') {
+        const sqMeters = parseFloat(bookingData.squareMeters || '0');
+        const sqMRate = selectedTasker.sq_m_rate || 0;
+        priceCents = Math.round(sqMRate * sqMeters * 100);
+        console.log('Sq m pricing:', { sqMeters, sqMRate, priceCents });
+      }
+
+      if (priceCents === 0) {
+        console.error('Price calculation resulted in 0:', {
+          pricingModel: bookingData.pricingModel,
+          hourly_rate: selectedTasker.hourly_rate,
+          sq_m_rate: selectedTasker.sq_m_rate,
+          hours: bookingData.hours,
+          squareMeters: bookingData.squareMeters,
+          selectedTasker
+        });
+        alert('Warning: Price calculated as $0. Please check tasker rates.');
+      }
+
+      const bookingRequest = {
+        userId: userId,
+        taskerId: taskerId,
+        serviceId: bookingData.serviceId,
+        city: bookingData.city,
+        address: bookingData.address,
+        startsAt: selectedSlot.start,
+        endsAt: selectedSlot.end,
+        priceCents: priceCents,
+        details: bookingData.additionalDescription || ''
+      };
+
+      const response = await fetch('http://localhost:3007/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingRequest),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to create booking' }));
+        throw new Error(errorData.message || 'Failed to create booking');
+      }
+
+      const booking = await response.json();
+      
+      // Clear booking data from sessionStorage
+      sessionStorage.removeItem('bookingData');
+      
+      // Show success message and redirect
+      alert(`Booking confirmed!\nTasker: ${selectedTasker.display_name}\nTime: ${new Date(selectedSlot.start).toLocaleString()} - ${new Date(selectedSlot.end).toLocaleString()}\nPrice: $${(priceCents / 100).toFixed(2)}`);
+      
+      // Redirect to home or bookings page
+      router.push('/');
+    } catch (err) {
+      console.error('Error creating booking:', err);
+      alert(err instanceof Error ? err.message : 'Failed to create booking. Please try again.');
+    }
   };
 
   const handleCloseCalendar = () => {

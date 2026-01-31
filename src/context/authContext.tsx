@@ -44,11 +44,30 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = props => {
     const userIdAndRole = getUserIdFromToken(token);
     setUserId(userIdAndRole?.userId ?? null);
     
+    console.log("Stored role from localStorage:", storedRole);
+    console.log("Role from token:", userIdAndRole?.role);
+    
     // Use role from token if available, otherwise use stored role
     if (userIdAndRole?.role) {
       setUserRole(userIdAndRole.role);
     } else if (storedRole) {
-      setUserRole(storedRole as Role);
+      // Map stored role string to Role enum
+      let mappedRole: Role;
+      switch (storedRole) {
+        case 'client':
+          mappedRole = Role.client;
+          break;
+        case 'tasker':
+          mappedRole = Role.tasker;
+          break;
+        case 'admin':
+          mappedRole = Role.admin;
+          break;
+        default:
+          mappedRole = Role.unauthorised;
+      }
+      console.log("Mapped role:", mappedRole);
+      setUserRole(mappedRole);
     } else {
       setUserRole(Role.unauthorised);
     }
@@ -100,7 +119,10 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = props => {
   };
 
   const onSetUserRole = (role: Role) => {
+    console.log("onSetUserRole called with:", role);
     setUserRole(role);
+    // Also update localStorage when role is set programmatically
+    localStorage.setItem('userRole', role);
   };
 
   const authData = {

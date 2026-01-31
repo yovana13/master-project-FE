@@ -2,6 +2,15 @@ import { useState, FormEvent, useContext } from 'react';
 import { useRouter } from 'next/router';
 import { authService } from '../services/authService';
 import { AuthContext } from '../context/authContext';
+import { Role } from '../enums/role.enum';
+import jwt from 'jsonwebtoken';
+
+interface DecodedToken {
+  userId: string;
+  role?: string;
+  iat: number;
+  exp: number;
+}
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -23,14 +32,60 @@ export default function Login() {
       // Store token and update context
       if (response.token) {
         localStorage.setItem('token', response.token);
-        // For login, we don't know the role yet - it should be fetched from backend
-        // or the backend should include user info in the login response
-        ctx.changesUserToken(response.token);
+        
+        // Decode token to get userId immediately
+        const decodedToken = jwt.decode(response.token) as DecodedToken;
+        const userIdFromToken = decodedToken?.userId;
+        
+        console.log('Decoded userId:', userIdFromToken);
+        
+        if (userIdFromToken) {
+          // Check if user has multiple roles
+          const rolesResponse = await fetch(`http://localhost:3007/users/${userIdFromToken}/roles`);
+          
+          console.log('Roles response status:', rolesResponse.status);
+          
+          if (rolesResponse.ok) {
+            const rolesData = await rolesResponse.json();
+            const roles = rolesData.roles || [];
+            
+            console.log('User roles:', roles);
+            
+            // Update context after we know the roles
+            ctx.changesUserToken(response.token);
+            
+            // If user has multiple roles, redirect to role selection
+            if (roles.length > 1) {
+              console.log('User has multiple roles, redirecting to /select-role');
+              router.push('/select-role');
+              return;
+            } else if (roles.length === 1) {
+              // Auto-select the single role
+              const role = roles[0];
+              console.log('Auto-selecting single role:', role);
+              // Map string to Role enum
+              let selectedRole = Role.unauthorised;
+              if (role === 'client') selectedRole = Role.client;
+              else if (role === 'tasker') selectedRole = Role.tasker;
+              else if (role === 'admin') selectedRole = Role.admin;
+              
+              ctx.onSetUserRole(selectedRole);
+            }
+          } else {
+            console.error('Failed to fetch roles:', rolesResponse.status);
+            // Still update context even if roles fetch fails
+            ctx.changesUserToken(response.token);
+          }
+        } else {
+          console.error('No userId in token');
+          ctx.changesUserToken(response.token);
+        }
       }
       
-      // On success, redirect to home page
+      // Redirect to home page
       router.push('/');
     } catch (err) {
+      console.error('Login error:', err);
       setError(err instanceof Error ? err.message : 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);

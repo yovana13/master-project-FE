@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CITIES_BULGARIA } from '../constants/cities';
+import CitiesSelector from './CitiesSelector';
 
 interface StepOneProps {
   userId: string | null;
@@ -40,26 +40,11 @@ export default function StepOne({
   setIsLoading,
   isLoading
 }: StepOneProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setProfileImage(e.target.files[0]);
     }
   };
-
-  const handleCityToggle = (cityKey: string) => {
-    if (cities.includes(cityKey)) {
-      setCities(cities.filter(c => c !== cityKey));
-    } else {
-      setCities([...cities, cityKey]);
-    }
-  };
-
-  const filteredCities = Object.entries(CITIES_BULGARIA).filter(([key, value]) =>
-    key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    value.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -203,45 +188,13 @@ export default function StepOne({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cities *
-          </label>
-          <p className="text-xs text-gray-500 mb-2">Select the cities where you're willing to work</p>
-          
-          <input
-            type="text"
-            placeholder="Search cities..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm mb-2"
-          />
-          
-          <div className="border border-gray-300 rounded-md max-h-60 overflow-y-auto">
-            {filteredCities.map(([key, value]) => (
-              <label
-                key={key}
-                className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={cities.includes(key)}
-                  onChange={() => handleCityToggle(key)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-900">
-                  {key} ({value})
-                </span>
-              </label>
-            ))}
-          </div>
-          
-          {cities.length > 0 && (
-            <p className="mt-2 text-xs text-gray-600">
-              Selected {cities.length} {cities.length === 1 ? 'city' : 'cities'}
-            </p>
-          )}
-        </div>
+        <CitiesSelector
+          selectedCities={cities}
+          onCitiesChange={setCities}
+          label="Cities *"
+          description="Select the cities where you're willing to work"
+          showSelectedCities={false}
+        />
 
         <div>
           <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
