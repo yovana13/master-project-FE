@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { AuthContext } from '../../context/authContext'
 import BookingCalendar from '../../components/BookingCalendar'
+import TaskerReviewsModal from '../../components/TaskerReviewsModal'
 
 interface BookingData {
   serviceId: number;
@@ -40,6 +41,8 @@ export default function BookService() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [calculatedHours, setCalculatedHours] = useState<number | null>(null);
   const [calculatingTime, setCalculatingTime] = useState(false);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [reviewsTasker, setReviewsTasker] = useState<Tasker | null>(null);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -198,6 +201,16 @@ export default function BookService() {
     router.push('/');
   };
 
+  const handleViewReviews = (tasker: Tasker) => {
+    setReviewsTasker(tasker);
+    setShowReviewsModal(true);
+  };
+
+  const handleCloseReviewsModal = () => {
+    setShowReviewsModal(false);
+    setReviewsTasker(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -313,23 +326,33 @@ export default function BookService() {
                     className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6"
                   >
                     <div className="flex items-start gap-4 mb-4">
-                      {tasker.profile_image_url ? (
-                        <img
-                          src={tasker.profile_image_url}
-                          alt={tasker.display_name}
-                          className="w-16 h-16 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-2xl text-gray-500">
-                            {tasker.display_name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
+                      <button
+                        onClick={() => handleViewReviews(tasker)}
+                        className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-full"
+                      >
+                        {tasker.profile_image_url ? (
+                          <img
+                            src={tasker.profile_image_url}
+                            alt={tasker.display_name}
+                            className="w-16 h-16 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
+                            <span className="text-2xl text-gray-500">
+                              {tasker.display_name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </button>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 text-lg">
-                          {tasker.display_name}
-                        </h3>
+                        <button
+                          onClick={() => handleViewReviews(tasker)}
+                          className="text-left focus:outline-none focus:underline"
+                        >
+                          <h3 className="font-semibold text-gray-900 text-lg hover:text-indigo-600 transition-colors">
+                            {tasker.display_name}
+                          </h3>
+                        </button>
                         {tasker.average_rating && (
                           <div className="flex items-center gap-1 mt-1">
                             <svg
@@ -401,6 +424,19 @@ export default function BookService() {
           pricingModel={bookingData.pricingModel}
           squareMeters={bookingData.squareMeters}
           onBookingConfirm={handleBookingConfirm}
+        />
+      )}
+
+      {/* Tasker Reviews Modal */}
+      {reviewsTasker && (
+        <TaskerReviewsModal
+          isOpen={showReviewsModal}
+          taskerId={reviewsTasker.id}
+          taskerName={reviewsTasker.display_name}
+          taskerImage={reviewsTasker.profile_image_url}
+          averageRating={reviewsTasker.average_rating}
+          totalReviews={reviewsTasker.total_reviews}
+          onClose={handleCloseReviewsModal}
         />
       )}
     </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/router'
 import { CITIES_BULGARIA } from '../constants/cities'
 import { Role } from '../enums/role.enum'
 import InfoMessage from '../components/InfoMessage'
+import AdminsTable from '../components/AdminsTable'
 
 interface Category {
   id: number;
@@ -223,12 +224,6 @@ export default function Home() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    router.push('/login');
-  };
-
   const handleServiceClick = (service: Service) => {
     setSelectedService(service);
     setShowModal(true);
@@ -304,19 +299,7 @@ export default function Home() {
         <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
               <h1 className="text-2xl font-bold text-gray-900">TaskRabbit Clone</h1>
-              {userId ? (
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-600">
-                    Welcome, <span className="font-medium">{userId}</span>
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
+              {!userId && (
                 <div className="flex gap-3">
                   <a
                     href="/login"
@@ -334,7 +317,7 @@ export default function Home() {
               )}
             </div>
           </div>
-        </header>
+      </header>
 
       <main className="min-h-screen bg-gray-50">
         {/* Debug Info */}
@@ -496,8 +479,15 @@ export default function Home() {
           </div>
         )}
 
+        {/* Admin Table Section */}
+        {userRole === Role.admin && (
+          <div className="px-4 sm:px-6 lg:px-8 py-8">
+            <AdminsTable />
+          </div>
+        )}
+
         {/* Categories */}
-        {userRole !== Role.tasker && (
+        {userRole !== Role.tasker && userRole !== Role.admin && (
           <div className="bg-white border-b">
             <div className="px-4 sm:px-6 lg:px-8 py-6">
               <div className="flex items-center gap-8 overflow-x-auto">
@@ -532,7 +522,7 @@ export default function Home() {
         )}
 
         {/* Services */}
-        {userRole !== Role.tasker && (
+        {userRole !== Role.tasker && userRole !== Role.admin && (
           <div className="px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredServices.map((service) => (

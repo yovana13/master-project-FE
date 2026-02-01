@@ -19,11 +19,16 @@ interface Booking {
   priceCents: number;
   status: 'completed' | 'declined' | 'cancelled' | 'no_show';
   details: string;
-  user: {
+  user?: {
     id: string;
     name: string;
     email: string;
     phone?: string;
+  };
+  tasker?: {
+    id: string;
+    display_name: string;
+    profile_image_url?: string;
   };
   service: {
     id: string;
@@ -74,11 +79,6 @@ export default function BookingHistory() {
       return;
     }
 
-    if (userRole !== Role.tasker) {
-      router.push('/');
-      return;
-    }
-
     fetchBookingHistory();
   }, [userId, userRole, router]);
 
@@ -87,7 +87,11 @@ export default function BookingHistory() {
     
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3007/bookings?taskerId=${userId}`);
+      const endpoint = userRole === Role.tasker
+        ? `http://localhost:3007/bookings?taskerId=${userId}`
+        : `http://localhost:3007/bookings?userId=${userId}`;
+      
+      const response = await fetch(endpoint);
       
       if (!response.ok) {
         throw new Error('Failed to fetch booking history');
@@ -117,8 +121,9 @@ export default function BookingHistory() {
       const response = await fetch(`http://localhost:3007/reviews/booking/${booking.id}/status`);
       if (response.ok) {
         const data = await response.json();
-        if (data.taskerReview) {
-          setSelectedReview(data.taskerReview);
+        const review = userRole === Role.tasker ? data.taskerReview : data.userReview;
+        if (review) {
+          setSelectedReview(review);
           setSelectedBooking(booking);
           setShowViewReviewModal(true);
         }
@@ -256,14 +261,25 @@ export default function BookingHistory() {
                     {booking.service.name}
                   </h3>
 
-                  {/* Client Info */}
+                  {/* Person Info (Client for Taskers, Tasker for Clients) */}
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span className="text-sm text-gray-600">{booking.user.name}</span>
-                    </div>
+                    {userRole === Role.tasker && booking.user && (
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="text-sm text-gray-600">{booking.user.name}</span>
+                      </div>
+                    )}
+                    
+                    {userRole === Role.client && booking.tasker && (
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="text-sm text-gray-600">{booking.tasker.display_name}</span>
+                      </div>
+                    )}
 
                     {/* Location */}
                     <div className="flex items-start gap-2">
@@ -310,7 +326,8 @@ export default function BookingHistory() {
                   {/* Review Button for Completed Bookings */}
                   {booking.status === 'completed' && (
                     <div className="pt-4 border-t border-gray-200 mt-4">
-                      {booking.reviewStatus?.hasTaskerReview ? (
+                      {(userRole === Role.tasker && booking.reviewStatus?.hasTaskerReview) || 
+                       (userRole === Role.client && booking.reviewStatus?.hasUserReview) ? (
                         <button
                           onClick={() => handleViewReview(booking)}
                           className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"

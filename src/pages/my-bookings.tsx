@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { AuthContext } from '../context/authContext';
 import EditBookingModal from '../components/EditBookingModal';
+import { Role } from '../enums/role.enum';
 
 interface Tasker {
   id: string;
@@ -33,15 +34,19 @@ interface Booking {
   service?: Service;
 }
 
-interface GroupedBookings {
-  active: Booking[];
-  completed: Booking[];
-  inactive: Booking[];
-}
-
 export default function MyBookings() {
   const router = useRouter();
   const { userId } = useContext(AuthContext);
+  
+  const [userRole, setUserRole] = useState<Role>(() => {
+    if (typeof window !== 'undefined') {
+      const storedRole = localStorage.getItem('userRole');
+      if (storedRole === 'tasker') return Role.tasker;
+      if (storedRole === 'client') return Role.client;
+      if (storedRole === 'admin') return Role.admin;
+    }
+    return Role.unauthorised;
+  });
   
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,9 +68,11 @@ export default function MyBookings() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(
-        `http://localhost:3007/bookings?userId=${userId}`
-      );
+      const endpoint = userRole === Role.tasker
+        ? `http://localhost:3007/bookings/pending-accepted/tasker/${userId}`
+        : `http://localhost:3007/bookings/pending-accepted/user/${userId}`;
+      
+      const response = await fetch(endpoint);
 
       if (!response.ok) {
         throw new Error('Failed to fetch bookings');
@@ -95,14 +102,6 @@ export default function MyBookings() {
   const handleCloseEditModal = () => {
     setShowEditModal(false);
     setEditingBooking(null);
-  };
-
-  const groupBookings = (bookings: Booking[]): GroupedBookings => {
-    return {
-      active: bookings.filter(b => b.status === 'pending' || b.status === 'accepted'),
-      completed: bookings.filter(b => b.status === 'completed'),
-      inactive: bookings.filter(b => ['canceled', 'declined', 'no_show'].includes(b.status)),
-    };
   };
 
   const formatDate = (isoString: string) => {
@@ -265,8 +264,6 @@ export default function MyBookings() {
     </div>
   );
 
-  const grouped = groupBookings(bookings);
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -333,49 +330,16 @@ export default function MyBookings() {
               </button>
             </div>
           ) : (
-            <div className="space-y-8">
-              {/* Active Bookings (Pending & Accepted) */}
-              {grouped.active.length > 0 && (
-                <section>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    Active Bookings
-                    <span className="text-sm font-normal text-gray-500">({grouped.active.length})</span>
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {grouped.active.map(renderBookingCard)}
-                  </div>
-                </section>
-              )}
-
-              {/* Completed Bookings */}
-              {grouped.completed.length > 0 && (
-                <section>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Completed
-                    <span className="text-sm font-normal text-gray-500">({grouped.completed.length})</span>
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {grouped.completed.map(renderBookingCard)}
-                  </div>
-                </section>
-              )}
-
-              {/* Inactive Bookings (Canceled, Declined, No Show) */}
-              {grouped.inactive.length > 0 && (
-                <section>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                    Past Issues
-                    <span className="text-sm font-normal text-gray-500">({grouped.inactive.length})</span>
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {grouped.inactive.map(renderBookingCard)}
-                  </div>
-                </section>
-              )}
-            </div>
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                Active Bookings
+                <span className="text-sm font-normal text-gray-500">({bookings.length})</span>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {bookings.map(renderBookingCard)}
+              </div>
+            </section>
           )}
         </div>
       </main>

@@ -2,8 +2,11 @@ import { useState } from 'react';
 
 interface Booking {
   id: string;
-  user: {
+  user?: {
     name: string;
+  };
+  tasker?: {
+    display_name: string;
   };
   service: {
     name: string;
@@ -32,6 +35,10 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
 
     setSubmitting(true);
     try {
+      // If booking has a user field, we are a tasker reviewing a client (isUserReview: false)
+      // If booking has a tasker field, we are a client reviewing a tasker (isUserReview: true)
+      const isUserReview = !!booking.tasker;
+      
       const response = await fetch('http://localhost:3007/reviews', {
         method: 'POST',
         headers: {
@@ -40,7 +47,7 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
         body: JSON.stringify({
           bookingId: booking.id,
           reviewerId: userId,
-          isUserReview: false,
+          isUserReview,
           rating,
           comment,
         }),
@@ -85,7 +92,9 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
 
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 mb-1">Review for:</p>
-          <p className="font-medium text-gray-900">{booking.user.name}</p>
+          <p className="font-medium text-gray-900">
+            {booking.user?.name || booking.tasker?.display_name || 'N/A'}
+          </p>
           <p className="text-sm text-gray-600">{booking.service.name}</p>
         </div>
 

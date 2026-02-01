@@ -123,6 +123,8 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = props => {
     setUserRole(role);
     // Also update localStorage when role is set programmatically
     localStorage.setItem('userRole', role);
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('userRoleChanged'));
   };
 
   const authData = {

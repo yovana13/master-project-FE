@@ -1,6 +1,9 @@
 interface Booking {
-  user: {
+  user?: {
     name: string;
+  };
+  tasker?: {
+    display_name: string;
   };
   service: {
     name: string;
@@ -41,7 +44,9 @@ export default function ViewReviewModal({ isOpen, booking, review, onClose }: Vi
 
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 mb-1">Review for:</p>
-          <p className="font-medium text-gray-900">{booking.user.name}</p>
+          <p className="font-medium text-gray-900">
+            {booking.user?.name || booking.tasker?.display_name || 'N/A'}
+          </p>
           <p className="text-sm text-gray-600">{booking.service.name}</p>
         </div>
 
