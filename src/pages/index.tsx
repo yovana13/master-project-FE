@@ -294,53 +294,7 @@ export default function Home() {
         <meta name="description" content="Master project frontend" />
       </Head>
 
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900">TaskRabbit Clone</h1>
-              {!userId && (
-                <div className="flex gap-3">
-                  <a
-                    href="/login"
-                    className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                  >
-                    Login
-                  </a>
-                  <a
-                    href="/signup"
-                    className="px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                  >
-                    Sign Up
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-      </header>
-
       <main className="min-h-screen bg-gray-50">
-        {/* Debug Info */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="bg-yellow-50 border-b border-yellow-200 px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center gap-4 text-sm">
-              <span className="font-semibold text-yellow-900">Debug:</span>
-              <span className="text-yellow-800">
-                State Role: <strong>{userRole || 'null'}</strong>
-              </span>
-              <span className="text-yellow-800">
-                LocalStorage: <strong>{typeof window !== 'undefined' ? localStorage.getItem('userRole') : 'N/A'}</strong>
-              </span>
-              <span className="text-yellow-800">
-                User ID: <strong>{userId || 'null'}</strong>
-              </span>
-              <span className="text-yellow-800">
-                Match: <strong>{userRole === Role.tasker ? 'YES' : 'NO'}</strong>
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* Tasker Bookings Section */}
         {userRole === Role.tasker && (
           <div className="bg-white border-b">
@@ -482,6 +436,18 @@ export default function Home() {
         {/* Admin Table Section */}
         {userRole === Role.admin && (
           <div className="px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
+              <button
+                onClick={() => router.push('/bug-reports')}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                View Bug Reports
+              </button>
+            </div>
             <AdminsTable />
           </div>
         )}

@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import { AuthContext } from '../../context/authContext'
 import BookingCalendar from '../../components/BookingCalendar'
 import TaskerReviewsModal from '../../components/TaskerReviewsModal'
+import ReportUserModal from '../../components/ReportUserModal'
 
 interface BookingData {
   serviceId: number;
@@ -26,6 +27,7 @@ interface Tasker {
   total_reviews?: number;
   hourly_rate?: number;
   sq_m_rate?: number;
+  verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected';
 }
 
 export default function BookService() {
@@ -43,6 +45,10 @@ export default function BookService() {
   const [calculatingTime, setCalculatingTime] = useState(false);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [reviewsTasker, setReviewsTasker] = useState<Tasker | null>(null);
+
+  const [showReportUserModal, setShowReportUserModal] = useState(false);
+  const [reportedUser, setReportedUser] = useState<{ id: string; name: string } | null>(null);
+  const [reportSuccess, setReportSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -211,6 +217,23 @@ export default function BookService() {
     setReviewsTasker(null);
   };
 
+  const handleReportUser = (taskerId: number, taskerName: string) => {
+    setReportedUser({ id: taskerId.toString(), name: taskerName });
+    setShowReportUserModal(true);
+  };
+
+  const handleReportSuccess = () => {
+    setReportSuccess('Report submitted successfully. Thank you for helping keep our community safe.');
+    setShowReportUserModal(false);
+    setReportedUser(null);
+    setTimeout(() => setReportSuccess(null), 5000);
+  };
+
+  const handleReportError = (errorMessage: string) => {
+    setError(errorMessage);
+    setTimeout(() => setError(null), 5000);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -261,6 +284,13 @@ export default function BookService() {
 
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Success Message */}
+          {reportSuccess && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-600">{reportSuccess}</p>
+            </div>
+          )}
+
           {/* Booking Summary */}
           {bookingData && (
             <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -349,9 +379,18 @@ export default function BookService() {
                           onClick={() => handleViewReviews(tasker)}
                           className="text-left focus:outline-none focus:underline"
                         >
-                          <h3 className="font-semibold text-gray-900 text-lg hover:text-indigo-600 transition-colors">
-                            {tasker.display_name}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 text-lg hover:text-indigo-600 transition-colors">
+                              {tasker.display_name}
+                            </h3>
+                            {tasker.verification_status === 'verified' && (
+                              <span className="inline-flex items-center text-blue-600" title="Verified Tasker">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                              </span>
+                            )}
+                          </div>
                         </button>
                         {tasker.average_rating && (
                           <div className="flex items-center gap-1 mt-1">
@@ -398,13 +437,24 @@ export default function BookService() {
                       )}
                     </div>
 
-                    <button
-                      onClick={() => handleTaskerSelect(tasker.id)}
-                      disabled={calculatingTime && selectedTasker?.id === tasker.id}
-                      className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {calculatingTime && selectedTasker?.id === tasker.id ? 'Calculating...' : 'Select Tasker'}
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => handleTaskerSelect(tasker.id)}
+                        disabled={calculatingTime && selectedTasker?.id === tasker.id}
+                        className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {calculatingTime && selectedTasker?.id === tasker.id ? 'Calculating...' : 'Select Tasker'}
+                      </button>
+                      <button
+                        onClick={() => handleReportUser(tasker.id, tasker.display_name)}
+                        className="w-full px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Report Tasker
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -436,7 +486,24 @@ export default function BookService() {
           taskerImage={reviewsTasker.profile_image_url}
           averageRating={reviewsTasker.average_rating}
           totalReviews={reviewsTasker.total_reviews}
+          verificationStatus={reviewsTasker.verification_status}
           onClose={handleCloseReviewsModal}
+        />
+      )}
+
+      {/* Report User Modal */}
+      {reportedUser && (
+        <ReportUserModal
+          isOpen={showReportUserModal}
+          reporterId={userId}
+          reportedUserId={reportedUser.id}
+          reportedUserName={reportedUser.name}
+          onClose={() => {
+            setShowReportUserModal(false);
+            setReportedUser(null);
+          }}
+          onSuccess={handleReportSuccess}
+          onError={handleReportError}
         />
       )}
     </div>

@@ -17,6 +17,11 @@ interface TaskerProfileData {
   address: string;
   is_active: boolean;
   profile_image_url: string;
+  verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected';
+  verification_document_url?: string;
+  verification_document_type?: 'id_card' | 'passport' | 'driver_license' | 'other';
+  verified_at?: string;
+  verification_notes?: string;
 }
 
 export default function MyAccount() {
@@ -59,6 +64,13 @@ export default function MyAccount() {
   });
   const [isEditingTasker, setIsEditingTasker] = useState(false);
   const [savingTasker, setSavingTasker] = useState(false);
+
+  // Verification document state
+  const [documentType, setDocumentType] = useState<'id_card' | 'passport' | 'driver_license' | 'other'>('id_card');
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<'unverified' | 'pending' | 'verified' | 'rejected'>('unverified');
 
   useEffect(() => {
     if (!userId) {
@@ -134,6 +146,12 @@ export default function MyAccount() {
           is_active: data.is_active !== undefined ? data.is_active : true,
           profile_image_url: data.profile_image_url || '',
         });
+        
+        // Set verification status and document type
+        setVerificationStatus(data.verification_status || 'unverified');
+        if (data.verification_document_type) {
+          setDocumentType(data.verification_document_type);
+        }
       }
     } catch (err) {
       console.error('Error fetching tasker profile:', err);
@@ -278,6 +296,60 @@ export default function MyAccount() {
     }
     setIsEditingTasker(false);
     setError(null);
+  };
+
+  const handleDocumentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setDocumentFile(e.target.files[0]);
+    }
+  };
+
+  const handleVerificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!documentFile) {
+      setVerificationMessage({ text: 'Please select a document to upload', type: 'error' });
+      return;
+    }
+
+    try {
+      setUploadingDocument(true);
+      setVerificationMessage(null);
+
+      const formData = new FormData();
+      formData.append('documentType', documentType);
+      formData.append('document', documentFile);
+
+      const response = await fetch(`http://localhost:3007/users/tasker/${userId}/verification-document`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload verification document');
+      }
+
+      setVerificationMessage({ text: 'Verification document uploaded successfully! Your profile will be reviewed.', type: 'success' });
+      setDocumentFile(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('document') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+      // Refresh tasker profile to get updated verification status
+      fetchTaskerProfile();
+
+      setTimeout(() => setVerificationMessage(null), 5000);
+    } catch (err) {
+      console.error('Error uploading verification document:', err);
+      setVerificationMessage({ text: 'Failed to upload document. Please try again.', type: 'error' });
+      setTimeout(() => setVerificationMessage(null), 5000);
+    } finally {
+      setUploadingDocument(false);
+    }
   };
 
   if (loading) {
@@ -578,6 +650,202 @@ export default function MyAccount() {
                       className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {savingTasker ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                )}
+              </form>
+            </div>
+          )}
+
+          {/* Profile Verification Card - Only visible for taskers */}
+          {userRole === Role.tasker && (
+            <div className="mt-6 bg-white rounded-lg shadow-sm">
+              {/* Card Header */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900">Profile Verification</h2>
+                    <p className="text-sm text-gray-600 mt-1">Upload a verification document to verify your identity</p>
+                  </div>
+                  {/* Verification Status Badge */}
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                    verificationStatus === 'verified' ? 'bg-green-100 text-green-800' :
+                    verificationStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    verificationStatus === 'rejected' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {verificationStatus === 'verified' ? '✓ Verified' :
+                     verificationStatus === 'pending' ? '⏳ Pending Review' :
+                     verificationStatus === 'rejected' ? '✗ Rejected' :
+                     '○ Unverified'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <form onSubmit={handleVerificationSubmit} className="p-6">
+                {/* Verification Status Info */}
+                {verificationStatus === 'pending' && (
+                  <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div className="flex">
+                      <svg className="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm text-yellow-800">
+                        Your verification document is currently under review. You will be notified once the review is complete.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {verificationStatus === 'verified' && taskerProfile?.verified_at && (
+                  <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                    <div className="flex">
+                      <svg className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-sm text-green-800">
+                        <p className="font-medium">Your profile is verified!</p>
+                        <p className="mt-1">Verified on {new Date(taskerProfile.verified_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {verificationStatus === 'rejected' && taskerProfile?.verification_notes && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div className="flex">
+                      <svg className="w-5 h-5 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-sm text-red-800">
+                        <p className="font-medium">Your verification was rejected.</p>
+                        <p className="mt-1"><strong>Reason:</strong> {taskerProfile.verification_notes}</p>
+                        <p className="mt-2">Please resubmit your document with the requested changes.</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {verificationMessage && (
+                  <div className={`mb-6 p-4 rounded-md ${
+                    verificationMessage.type === 'success' 
+                      ? 'bg-green-50 border border-green-200' 
+                      : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <p className={`text-sm ${
+                      verificationMessage.type === 'success' ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {verificationMessage.text}
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {/* Document Type */}
+                  <div>
+                    <label htmlFor="documentType" className="block text-sm font-medium text-gray-700 mb-2">
+                      Document Type
+                    </label>
+                    <select
+                      id="documentType"
+                      value={documentType}
+                      onChange={(e) => setDocumentType(e.target.value as 'id_card' | 'passport' | 'driver_license' | 'other')}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={uploadingDocument || verificationStatus === 'pending' || verificationStatus === 'verified'}
+                    >
+                      <option value="id_card">ID Card</option>
+                      <option value="passport">Passport</option>
+                      <option value="driver_license">Driver's License</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Current Document Display (for pending/verified) */}
+                  {(verificationStatus === 'pending' || verificationStatus === 'verified') && taskerProfile?.verification_document_url && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Uploaded Document
+                      </label>
+                      <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span className="text-sm text-gray-900 font-medium">Document submitted</span>
+                          </div>
+                          <a
+                            href={taskerProfile.verification_document_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                          >
+                            View Document →
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Document Upload - Only for unverified/rejected */}
+                  {(verificationStatus === 'unverified' || verificationStatus === 'rejected') && (
+                    <div>
+                      <label htmlFor="document" className="block text-sm font-medium text-gray-700 mb-2">
+                        Upload Document
+                      </label>
+                      <input
+                        type="file"
+                        id="document"
+                        onChange={handleDocumentFileChange}
+                        accept="image/*,.pdf"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        disabled={uploadingDocument}
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        Accepted formats: Images (JPG, PNG) or PDF. Max size: 10MB
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Selected File Display */}
+                  {documentFile && (
+                    <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-sm text-indigo-900 font-medium">{documentFile.name}</span>
+                        <span className="text-xs text-indigo-600">({(documentFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit Button - Only for unverified/rejected */}
+                {(verificationStatus === 'unverified' || verificationStatus === 'rejected') && (
+                  <div className="flex justify-end pt-6 mt-6 border-t border-gray-200">
+                    <button
+                      type="submit"
+                      disabled={uploadingDocument || !documentFile}
+                      className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {uploadingDocument ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          {verificationStatus === 'rejected' ? 'Resubmit Document' : 'Upload Document'}
+                        </>
+                      )}
                     </button>
                   </div>
                 )}

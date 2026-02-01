@@ -1,11 +1,13 @@
 import { useRouter } from 'next/router';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { AuthContext } from '../context/authContext';
 import { Role } from '../enums/role.enum';
+import ReportBugModal from './ReportBugModal';
 
 export default function Header() {
   const router = useRouter();
   const { userId, onSetUserId } = useContext(AuthContext);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Initialize userRole from localStorage
   const [userRole, setUserRole] = useState<Role>(() => {
@@ -17,6 +19,11 @@ export default function Header() {
     }
     return Role.unauthorised;
   });
+
+  // State for Help dropdown and modals
+  const [showHelpDropdown, setShowHelpDropdown] = useState(false);
+  const [showReportBugModal, setShowReportBugModal] = useState(false);
+  const [reportMessage, setReportMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Update userRole when localStorage changes
   useEffect(() => {
@@ -39,6 +46,33 @@ export default function Header() {
     };
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowHelpDropdown(false);
+      }
+    };
+
+    if (showHelpDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showHelpDropdown]);
+
+  const handleReportSuccess = () => {
+    setReportMessage({ text: 'Report submitted successfully!', type: 'success' });
+    setTimeout(() => setReportMessage(null), 5000);
+  };
+
+  const handleReportError = (message: string) => {
+    setReportMessage({ text: message, type: 'error' });
+    setTimeout(() => setReportMessage(null), 5000);
+  };
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,11 +82,48 @@ export default function Header() {
             onClick={() => router.push('/')}
             className="cursor-pointer"
           >
-            <h2 className="text-xl font-bold text-gray-900">Master Project</h2>
+            <h2 className="text-xl font-bold text-gray-900">TaskTrust</h2>
           </div>
 
           {/* Navigation */}
           <nav className="flex items-center gap-6">
+            {/* Help Dropdown - Available for everyone except admins */}
+            {(!userId || userRole !== Role.admin) && (
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setShowHelpDropdown(!showHelpDropdown)}
+                  className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Help
+                  <svg className={`w-4 h-4 transition-transform ${showHelpDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Dropdown Menu */}
+                {showHelpDropdown && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                    <button
+                      onClick={() => {
+                        setShowReportBugModal(true);
+                        setShowHelpDropdown(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                    >
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Report a Bug
+                    </button>
+                    {/* Report User - Only for logged-in users */}
+                  </div>
+                )}
+              </div>
+            )}
+
             {!userId ? (
               <button
                 onClick={() => router.push('/login')}
@@ -97,25 +168,64 @@ export default function Header() {
                   </>
                 )}
                 
-                <button
-                  onClick={() => router.push('/my-bookings')}
-                  className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  My Bookings
-                </button>
+                {/* Bug Reports - Only for admins */}
+                {userRole === Role.admin && (
+                  <>
+                    <button
+                      onClick={() => router.push('/bug-reports')}
+                      className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Bug Reports
+                    </button>
+                    <button
+                      onClick={() => router.push('/user-reports')}
+                      className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      User Reports
+                    </button>
+                    <button
+                      onClick={() => router.push('/verification-review')}
+                      className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Verification Review
+                    </button>
+                  </>
+                )}
+                
+                {/* My Bookings - Only for clients and taskers */}
+                {userRole !== Role.admin && (
+                  <button
+                    onClick={() => router.push('/my-bookings')}
+                    className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    My Bookings
+                  </button>
+                )}
 
-                <button
-                  onClick={() => router.push('/booking-history')}
-                  className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Booking History
-                </button>
+                {/* Booking History - Only for non-taskers and non-admins (since taskers have it above) */}
+                {userRole !== Role.tasker && userRole !== Role.admin && (
+                  <button
+                    onClick={() => router.push('/booking-history')}
+                    className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Booking History
+                  </button>
+                )}
                 
                 <button
                   onClick={() => router.push('/my-account')}
@@ -147,6 +257,24 @@ export default function Header() {
           </nav>
         </div>
       </div>
+
+      {/* Report Messages */}
+      {reportMessage && (
+        <div className={`${reportMessage.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border-b px-4 sm:px-6 lg:px-8 py-3`}>
+          <p className={`text-sm ${reportMessage.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+            {reportMessage.text}
+          </p>
+        </div>
+      )}
+
+      {/* Report Modals */}
+      <ReportBugModal
+        isOpen={showReportBugModal}
+        userId={userId}
+        onClose={() => setShowReportBugModal(false)}
+        onSuccess={handleReportSuccess}
+        onError={handleReportError}
+      />
     </header>
   );
 }

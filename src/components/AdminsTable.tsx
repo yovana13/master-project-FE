@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import CreateAdminModal from './CreateAdminModal';
 
 interface Admin {
   id: string;
@@ -14,6 +15,8 @@ export default function AdminsTable() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAdmins();
@@ -48,6 +51,17 @@ export default function AdminsTable() {
     });
   };
 
+  const handleCreateSuccess = () => {
+    setSuccessMessage('Admin created successfully!');
+    setTimeout(() => setSuccessMessage(null), 5000);
+    fetchAdmins();
+  };
+
+  const handleCreateError = (message: string) => {
+    setError(message);
+    setTimeout(() => setError(null), 5000);
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
@@ -56,22 +70,22 @@ export default function AdminsTable() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <p className="text-red-600 mb-4">{error}</p>
-        <button
-          onClick={fetchAdmins}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 border-b border-green-200 px-6 py-3">
+          <p className="text-sm text-green-800">{successMessage}</p>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border-b border-red-200 px-6 py-3">
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
+
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
@@ -80,15 +94,26 @@ export default function AdminsTable() {
               Total: {admins.length} {admins.length === 1 ? 'admin' : 'admins'}
             </p>
           </div>
-          <button
-            onClick={fetchAdmins}
-            className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-          >
-            <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Create New Admin
+            </button>
+            <button
+              onClick={fetchAdmins}
+              className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+            >
+              <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 
@@ -162,6 +187,14 @@ export default function AdminsTable() {
           </table>
         </div>
       )}
+
+      {/* Create Admin Modal */}
+      <CreateAdminModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleCreateSuccess}
+        onError={handleCreateError}
+      />
     </div>
   );
 }

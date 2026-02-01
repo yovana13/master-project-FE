@@ -6,6 +6,7 @@ import { Role } from '../enums/role.enum';
 import InfoMessage from '../components/InfoMessage';
 import LeaveReviewModal from '../components/LeaveReviewModal';
 import ViewReviewModal from '../components/ViewReviewModal';
+import ReportUserModal from '../components/ReportUserModal';
 
 interface Booking {
   id: string;
@@ -29,6 +30,7 @@ interface Booking {
     id: string;
     display_name: string;
     profile_image_url?: string;
+    verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected';
   };
   service: {
     id: string;
@@ -72,6 +74,9 @@ export default function BookingHistory() {
   const [infoMessage, setInfoMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [showViewReviewModal, setShowViewReviewModal] = useState(false);
   const [selectedReview, setSelectedReview] = useState<any>(null);
+
+  const [showReportUserModal, setShowReportUserModal] = useState(false);
+  const [reportedUser, setReportedUser] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (!userId) {
@@ -141,6 +146,21 @@ export default function BookingHistory() {
 
   const handleReviewError = (message: string) => {
     setInfoMessage({ text: message, type: 'error' });
+  };
+
+  const handleReportUser = (userId: string, userName: string) => {
+    setReportedUser({ id: userId, name: userName });
+    setShowReportUserModal(true);
+  };
+
+  const handleReportSuccess = () => {
+    setInfoMessage({ text: 'Report submitted successfully. Thank you for helping keep our community safe.', type: 'success' });
+    setShowReportUserModal(false);
+    setReportedUser(null);
+  };
+
+  const handleReportError = (errorMessage: string) => {
+    setInfoMessage({ text: errorMessage, type: 'error' });
   };
 
   const filteredBookings = statusFilter === 'all' 
@@ -278,6 +298,13 @@ export default function BookingHistory() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         <span className="text-sm text-gray-600">{booking.tasker.display_name}</span>
+                        {booking.tasker.verification_status === 'verified' && (
+                          <span className="inline-flex items-center text-blue-600" title="Verified Tasker">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        )}
                       </div>
                     )}
 
@@ -325,7 +352,7 @@ export default function BookingHistory() {
 
                   {/* Review Button for Completed Bookings */}
                   {booking.status === 'completed' && (
-                    <div className="pt-4 border-t border-gray-200 mt-4">
+                    <div className="pt-4 border-t border-gray-200 mt-4 space-y-2">
                       {(userRole === Role.tasker && booking.reviewStatus?.hasTaskerReview) || 
                        (userRole === Role.client && booking.reviewStatus?.hasUserReview) ? (
                         <button
@@ -340,6 +367,30 @@ export default function BookingHistory() {
                           className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
                         >
                           Leave a Review
+                        </button>
+                      )}
+                      
+                      {/* Report User Button */}
+                      {userRole === Role.client && booking.tasker && (
+                        <button
+                          onClick={() => handleReportUser(booking.taskerId, booking.tasker!.display_name)}
+                          className="w-full px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Report Tasker
+                        </button>
+                      )}
+                      {userRole === Role.tasker && booking.user && (
+                        <button
+                          onClick={() => handleReportUser(booking.userId, booking.user!.name)}
+                          className="w-full px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Report Client
                         </button>
                       )}
                     </div>
@@ -375,6 +426,22 @@ export default function BookingHistory() {
           setSelectedBooking(null);
         }}
       />
+
+      {/* Report User Modal */}
+      {reportedUser && (
+        <ReportUserModal
+          isOpen={showReportUserModal}
+          reporterId={userId}
+          reportedUserId={reportedUser.id}
+          reportedUserName={reportedUser.name}
+          onClose={() => {
+            setShowReportUserModal(false);
+            setReportedUser(null);
+          }}
+          onSuccess={handleReportSuccess}
+          onError={handleReportError}
+        />
+      )}
 
       {/* Info Message */}
       {infoMessage && (
