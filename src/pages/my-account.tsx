@@ -64,6 +64,8 @@ export default function MyAccount() {
   });
   const [isEditingTasker, setIsEditingTasker] = useState(false);
   const [savingTasker, setSavingTasker] = useState(false);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
 
   // Verification document state
   const [documentType, setDocumentType] = useState<'id_card' | 'passport' | 'driver_license' | 'other'>('id_card');
@@ -71,6 +73,16 @@ export default function MyAccount() {
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [verificationStatus, setVerificationStatus] = useState<'unverified' | 'pending' | 'verified' | 'rejected'>('unverified');
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) {
@@ -160,7 +172,7 @@ export default function MyAccount() {
 
   const handleSwitchToTasker = () => {
     onSetUserRole(Role.tasker);
-    setSuccessMessage('Switched to Tasker profile successfully!');
+    setSuccessMessage('Превключихте успешно към профил на изпълнител!');
     setTimeout(() => {
       router.push('/');
     }, 1500);
@@ -168,7 +180,7 @@ export default function MyAccount() {
 
   const handleSwitchToClient = () => {
     onSetUserRole(Role.client);
-    setSuccessMessage('Switched to Client profile successfully!');
+    setSuccessMessage('Превключихте успешно към клиентски профил!');
     setTimeout(() => {
       router.push('/');
     }, 1500);
@@ -224,7 +236,7 @@ export default function MyAccount() {
 
       const updatedData = await response.json();
       setUserData(updatedData);
-      setSuccessMessage('Profile updated successfully!');
+      setSuccessMessage('Профилът е актуализиран успешно!');
       setIsEditing(false);
       
       // Clear success message after 3 seconds
@@ -249,6 +261,66 @@ export default function MyAccount() {
     setError(null);
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    // Validate passwords
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('Новата парола и потвърждението не съвпадат');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('Новата парола трябва да бъде поне 6 символа');
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const response = await fetch(`http://localhost:3007/users/${userId}/change-password`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешна промяна на паролата' }));
+        throw new Error(errorData.message || 'Неуспешна промяна на паролата');
+      }
+
+      setPasswordSuccess('Паролата е променена успешно!');
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setPasswordSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error changing password:', err);
+      setPasswordError(err instanceof Error ? err.message : 'Неуспешна промяна на паролата');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const handleTaskerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingTasker(true);
@@ -271,7 +343,7 @@ export default function MyAccount() {
 
       const updatedData = await response.json();
       setTaskerProfile(updatedData);
-      setSuccessMessage('Tasker profile updated successfully!');
+      setSuccessMessage('Профилът на изпълнител е актуализиран успешно!');
       setIsEditingTasker(false);
       
       // Clear success message after 3 seconds
@@ -296,6 +368,52 @@ export default function MyAccount() {
     }
     setIsEditingTasker(false);
     setError(null);
+    setProfileImageFile(null);
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfileImageFile(e.target.files[0]);
+    }
+  };
+
+  const handleProfileImageUpload = async () => {
+    if (!profileImageFile || !userId) return;
+
+    try {
+      setUploadingProfileImage(true);
+      setError(null);
+
+      const formData = new FormData();
+      formData.append('file', profileImageFile);
+
+      const response = await fetch(`http://localhost:3007/users/${userId}/profile-image`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Неуспешно качване на профилната снимка');
+      }
+
+      const data = await response.json();
+      setSuccessMessage('Профилната снимка е качена успешно!');
+      setProfileImageFile(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('profile-image') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+      // Refresh tasker profile to get updated image URL
+      fetchTaskerProfile();
+      
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error uploading profile image:', err);
+      setError(err instanceof Error ? err.message : 'Неуспешно качване на профилната снимка');
+    } finally {
+      setUploadingProfileImage(false);
+    }
   };
 
   const handleDocumentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -308,7 +426,7 @@ export default function MyAccount() {
     e.preventDefault();
     
     if (!documentFile) {
-      setVerificationMessage({ text: 'Please select a document to upload', type: 'error' });
+      setVerificationMessage({ text: 'Моля, изберете документ за качване', type: 'error' });
       return;
     }
 
@@ -332,7 +450,7 @@ export default function MyAccount() {
         throw new Error('Failed to upload verification document');
       }
 
-      setVerificationMessage({ text: 'Verification document uploaded successfully! Your profile will be reviewed.', type: 'success' });
+      setVerificationMessage({ text: 'Документът за верификация е качен успешно! Вашият профил ще бъде прегледан.', type: 'success' });
       setDocumentFile(null);
       
       // Reset file input
@@ -345,7 +463,7 @@ export default function MyAccount() {
       setTimeout(() => setVerificationMessage(null), 5000);
     } catch (err) {
       console.error('Error uploading verification document:', err);
-      setVerificationMessage({ text: 'Failed to upload document. Please try again.', type: 'error' });
+      setVerificationMessage({ text: 'Неуспешно качване на документа. Моля, опитайте отново.', type: 'error' });
       setTimeout(() => setVerificationMessage(null), 5000);
     } finally {
       setUploadingDocument(false);
@@ -355,7 +473,7 @@ export default function MyAccount() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading your account...</div>
+        <div className="text-gray-600">Зареждане на вашия акаунт...</div>
       </div>
     );
   }
@@ -363,26 +481,9 @@ export default function MyAccount() {
   return (
     <div>
       <Head>
-        <title>My Account</title>
-        <meta name="description" content="Manage your account settings" />
+        <title>Моят акаунт</title>
+        <meta name="description" content="Управление на настройките на акаунта" />
       </Head>
-
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
-          </div>
-        </div>
-      </header>
 
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -410,8 +511,8 @@ export default function MyAccount() {
             {/* Card Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage your personal information</p>
+                <h2 className="text-xl font-semibold text-gray-900">Информация за профила</h2>
+                <p className="text-sm text-gray-600 mt-1">Управление на вашата лична информация</p>
               </div>
               {!isEditing && (
                 <button
@@ -421,7 +522,7 @@ export default function MyAccount() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Edit Profile
+                  Редактирай профил
                 </button>
               )}
             </div>
@@ -432,7 +533,7 @@ export default function MyAccount() {
                 {/* Name */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    Name
+                    Име
                   </label>
                   {isEditing ? (
                     <input
@@ -446,7 +547,7 @@ export default function MyAccount() {
                     />
                   ) : (
                     <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
-                      {userData?.name || 'Not set'}
+                      {userData?.name || 'Не е зададено'}
                     </div>
                   )}
                 </div>
@@ -454,7 +555,7 @@ export default function MyAccount() {
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
+                    Имейл
                   </label>
                   {isEditing ? (
                     <input
@@ -468,7 +569,7 @@ export default function MyAccount() {
                     />
                   ) : (
                     <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
-                      {userData?.email || 'Not set'}
+                      {userData?.email || 'Не е зададено'}
                     </div>
                   )}
                 </div>
@@ -476,7 +577,7 @@ export default function MyAccount() {
                 {/* Phone */}
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    Телефонен номер
                   </label>
                   {isEditing ? (
                     <input
@@ -490,7 +591,7 @@ export default function MyAccount() {
                     />
                   ) : (
                     <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
-                      {userData?.phone || 'Not set'}
+                      {userData?.phone || 'Не е зададено'}
                     </div>
                   )}
                 </div>
@@ -505,17 +606,116 @@ export default function MyAccount() {
                     disabled={saving}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                   >
-                    Cancel
+                    Отказ
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
                     className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {saving ? 'Saving...' : 'Save Changes'}
+                    {saving ? 'Запазване...' : 'Запази промените'}
                   </button>
                 </div>
               )}
+            </form>
+          </div>
+
+          {/* Password Change Card */}
+          <div className="mt-6 bg-white rounded-lg shadow-sm">
+            {/* Card Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Промяна на парола</h2>
+                <p className="text-sm text-gray-600 mt-1">Актуализирайте вашата парола за сигурност</p>
+              </div>
+            </div>
+
+            {/* Card Body */}
+            <form onSubmit={handlePasswordSubmit} className="p-6">
+              {/* Password Success Message */}
+              {passwordSuccess && (
+                <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-green-600">{passwordSuccess}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Password Error Message */}
+              {passwordError && (
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-red-600">{passwordError}</p>
+                </div>
+              )}
+
+              <div className="space-y-6">
+                {/* Current Password */}
+                <div>
+                  <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    Текуща парола *
+                  </label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    name="currentPassword"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Въведете текущата парола"
+                  />
+                </div>
+
+                {/* New Password */}
+                <div>
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    Нова парола *
+                  </label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    minLength={6}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Въведете нова парола (поне 6 символа)"
+                  />
+                </div>
+
+                {/* Confirm New Password */}
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    Потвърди нова парола *
+                  </label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    required
+                    minLength={6}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Потвърдете новата парола"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex justify-end pt-6 mt-6 border-t border-gray-200">
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {changingPassword ? 'Промяна...' : 'Промени паролата'}
+                </button>
+              </div>
             </form>
           </div>
 
@@ -525,8 +725,8 @@ export default function MyAccount() {
               {/* Card Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Tasker Profile</h2>
-                  <p className="text-sm text-gray-600 mt-1">Manage your tasker-specific information</p>
+                  <h2 className="text-xl font-semibold text-gray-900">Профил на изпълнител</h2>
+                  <p className="text-sm text-gray-600 mt-1">Управление на вашата информация като изпълнител</p>
                 </div>
                 {!isEditingTasker && (
                   <button
@@ -536,18 +736,88 @@ export default function MyAccount() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Edit Tasker Profile
+                    Редактирай профил на изпълнител
                   </button>
                 )}
               </div>
 
               {/* Card Body */}
               <form onSubmit={handleTaskerSubmit} className="p-6">
+                {/* Profile Image Preview */}
+                {taskerProfile?.profile_image_url && (
+                  <div className="mb-6 flex justify-center">
+                    <div className="relative">
+                      <img
+                        src={taskerProfile.profile_image_url}
+                        alt="Profile"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-indigo-100 shadow-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://via.placeholder.com/150?text=No+Image';
+                        }}
+                      />
+                      {taskerProfile.verification_status === 'verified' && (
+                        <span className="absolute bottom-0 right-0 bg-green-500 text-white rounded-full p-1.5 border-2 border-white" title="Потвърден изпълнител">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Profile Image Upload - Only in edit mode */}
+                {isEditingTasker && (
+                  <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">Актуализирай профилна снимка</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label htmlFor="profile-image" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Избери файл
+                        </label>
+                        <input
+                          type="file"
+                          id="profile-image"
+                          onChange={handleProfileImageChange}
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploadingProfileImage}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Приети формати: JPG, PNG, GIF. Максимален размер: 5MB
+                      </p>
+                      {profileImageFile && (
+                        <div className="flex items-center justify-between p-3 bg-indigo-50 border border-indigo-200 rounded-md">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm text-indigo-900 font-medium">{profileImageFile.name}</span>
+                            <span className="text-xs text-indigo-600">({(profileImageFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleProfileImageUpload}
+                            disabled={uploadingProfileImage}
+                            className="px-3 py-1 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {uploadingProfileImage ? 'Качване...' : 'Качи'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-6">
                   {/* Display Name */}
                   <div>
                     <label htmlFor="display_name" className="block text-sm font-medium text-gray-700 mb-2">
-                      Display Name
+                      Показвано име
                     </label>
                     {isEditingTasker ? (
                       <input
@@ -557,11 +827,11 @@ export default function MyAccount() {
                         value={taskerFormData.display_name}
                         onChange={handleTaskerChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Your professional display name"
+                        placeholder="Вашето професионално име"
                       />
                     ) : (
                       <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
-                        {taskerProfile?.display_name || 'Not set'}
+                        {taskerProfile?.display_name || 'Не е зададено'}
                       </div>
                     )}
                   </div>
@@ -569,7 +839,7 @@ export default function MyAccount() {
                   {/* Bio */}
                   <div>
                     <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
-                      Bio
+                      Биография
                     </label>
                     {isEditingTasker ? (
                       <textarea
@@ -579,11 +849,11 @@ export default function MyAccount() {
                         value={taskerFormData.bio}
                         onChange={handleTaskerChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Tell clients about your experience and skills..."
+                        placeholder="Разкажете на клиентите за вашия опит и умения..."
                       />
                     ) : (
                       <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900 whitespace-pre-wrap">
-                        {taskerProfile?.bio || 'Not set'}
+                        {taskerProfile?.bio || 'Не е зададено'}
                       </div>
                     )}
                   </div>
@@ -591,7 +861,7 @@ export default function MyAccount() {
                   {/* Address */}
                   <div>
                     <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                      Address
+                      Адрес
                     </label>
                     {isEditingTasker ? (
                       <input
@@ -601,33 +871,11 @@ export default function MyAccount() {
                         value={taskerFormData.address}
                         onChange={handleTaskerChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="Your service area address"
+                        placeholder="Адрес на областта за обслужване"
                       />
                     ) : (
                       <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
-                        {taskerProfile?.address || 'Not set'}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Profile Image URL */}
-                  <div>
-                    <label htmlFor="profile_image_url" className="block text-sm font-medium text-gray-700 mb-2">
-                      Profile Image URL
-                    </label>
-                    {isEditingTasker ? (
-                      <input
-                        type="url"
-                        id="profile_image_url"
-                        name="profile_image_url"
-                        value={taskerFormData.profile_image_url}
-                        onChange={handleTaskerChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    ) : (
-                      <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
-                        {taskerProfile?.profile_image_url || 'Not set'}
+                        {taskerProfile?.address || 'Не е зададено'}
                       </div>
                     )}
                   </div>
@@ -642,14 +890,14 @@ export default function MyAccount() {
                       disabled={savingTasker}
                       className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
                     >
-                      Cancel
+                      Отказ
                     </button>
                     <button
                       type="submit"
                       disabled={savingTasker}
                       className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {savingTasker ? 'Saving...' : 'Save Changes'}
+                      {savingTasker ? 'Запазване...' : 'Запази промените'}
                     </button>
                   </div>
                 )}
@@ -664,8 +912,8 @@ export default function MyAccount() {
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Profile Verification</h2>
-                    <p className="text-sm text-gray-600 mt-1">Upload a verification document to verify your identity</p>
+                    <h2 className="text-xl font-semibold text-gray-900">Верификация на профил</h2>
+                    <p className="text-sm text-gray-600 mt-1">Качете документ за верификация, за да потвърдите самоличността си</p>
                   </div>
                   {/* Verification Status Badge */}
                   <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -674,10 +922,10 @@ export default function MyAccount() {
                     verificationStatus === 'rejected' ? 'bg-red-100 text-red-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
-                    {verificationStatus === 'verified' ? '✓ Verified' :
-                     verificationStatus === 'pending' ? '⏳ Pending Review' :
-                     verificationStatus === 'rejected' ? '✗ Rejected' :
-                     '○ Unverified'}
+                    {verificationStatus === 'verified' ? '✓ Потвърден' :
+                     verificationStatus === 'pending' ? '⏳ Чака преглед' :
+                     verificationStatus === 'rejected' ? '✗ Отказан' :
+                     '○ Непотвърден'}
                   </span>
                 </div>
               </div>
@@ -692,7 +940,7 @@ export default function MyAccount() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <p className="text-sm text-yellow-800">
-                        Your verification document is currently under review. You will be notified once the review is complete.
+                        Вашият документ за верификация в момента се преглежда. Ще бъдете уведомени, когато прегледът бъде завършен.
                       </p>
                     </div>
                   </div>
@@ -705,8 +953,8 @@ export default function MyAccount() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div className="text-sm text-green-800">
-                        <p className="font-medium">Your profile is verified!</p>
-                        <p className="mt-1">Verified on {new Date(taskerProfile.verified_at).toLocaleDateString()}</p>
+                        <p className="font-medium">Вашият профил е потвърден!</p>
+                        <p className="mt-1">Потвърден на {new Date(taskerProfile.verified_at).toLocaleDateString('bg-BG')}</p>
                       </div>
                     </div>
                   </div>
@@ -719,9 +967,9 @@ export default function MyAccount() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div className="text-sm text-red-800">
-                        <p className="font-medium">Your verification was rejected.</p>
-                        <p className="mt-1"><strong>Reason:</strong> {taskerProfile.verification_notes}</p>
-                        <p className="mt-2">Please resubmit your document with the requested changes.</p>
+                        <p className="font-medium">Вашата верификация беше отказана.</p>
+                        <p className="mt-1"><strong>Причина:</strong> {taskerProfile.verification_notes}</p>
+                        <p className="mt-2">Моля, изпратете отново документа си с поисканите промени.</p>
                       </div>
                     </div>
                   </div>
@@ -745,7 +993,7 @@ export default function MyAccount() {
                   {/* Document Type */}
                   <div>
                     <label htmlFor="documentType" className="block text-sm font-medium text-gray-700 mb-2">
-                      Document Type
+                      Вид документ
                     </label>
                     <select
                       id="documentType"
@@ -754,10 +1002,10 @@ export default function MyAccount() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                       disabled={uploadingDocument || verificationStatus === 'pending' || verificationStatus === 'verified'}
                     >
-                      <option value="id_card">ID Card</option>
-                      <option value="passport">Passport</option>
-                      <option value="driver_license">Driver's License</option>
-                      <option value="other">Other</option>
+                      <option value="id_card">Лична карта</option>
+                      <option value="passport">Паспорт</option>
+                      <option value="driver_license">Шофьорска книжка</option>
+                      <option value="other">Друго</option>
                     </select>
                   </div>
 
@@ -765,7 +1013,7 @@ export default function MyAccount() {
                   {(verificationStatus === 'pending' || verificationStatus === 'verified') && taskerProfile?.verification_document_url && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Uploaded Document
+                        Качен документ
                       </label>
                       <div className="p-4 bg-gray-50 border border-gray-200 rounded-md">
                         <div className="flex items-center justify-between">
@@ -773,7 +1021,7 @@ export default function MyAccount() {
                             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span className="text-sm text-gray-900 font-medium">Document submitted</span>
+                            <span className="text-sm text-gray-900 font-medium">Документ изпратен</span>
                           </div>
                           <a
                             href={taskerProfile.verification_document_url}
@@ -781,7 +1029,7 @@ export default function MyAccount() {
                             rel="noopener noreferrer"
                             className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
                           >
-                            View Document →
+                            Преглед на документа →
                           </a>
                         </div>
                       </div>
@@ -792,18 +1040,26 @@ export default function MyAccount() {
                   {(verificationStatus === 'unverified' || verificationStatus === 'rejected') && (
                     <div>
                       <label htmlFor="document" className="block text-sm font-medium text-gray-700 mb-2">
-                        Upload Document
+                        Качване на документ
                       </label>
-                      <input
-                        type="file"
-                        id="document"
-                        onChange={handleDocumentFileChange}
-                        accept="image/*,.pdf"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                        disabled={uploadingDocument}
-                      />
+                      <div>
+                        <label htmlFor="document" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          Избери файл
+                        </label>
+                        <input
+                          type="file"
+                          id="document"
+                          onChange={handleDocumentFileChange}
+                          accept="image/*,.pdf"
+                          className="hidden"
+                          disabled={uploadingDocument}
+                        />
+                      </div>
                       <p className="text-xs text-gray-500 mt-2">
-                        Accepted formats: Images (JPG, PNG) or PDF. Max size: 10MB
+                        Приети формати: Изображения (JPG, PNG) или PDF. Максимален размер: 10MB
                       </p>
                     </div>
                   )}
@@ -836,14 +1092,14 @@ export default function MyAccount() {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
-                          Uploading...
+                          Качване...
                         </>
                       ) : (
                         <>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
-                          {verificationStatus === 'rejected' ? 'Resubmit Document' : 'Upload Document'}
+                          {verificationStatus === 'rejected' ? 'Изпрати отново документа' : 'Качи документ'}
                         </>
                       )}
                     </button>
@@ -853,23 +1109,13 @@ export default function MyAccount() {
             </div>
           )}
 
-          {/* Debug Info - Remove after testing */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-6 bg-gray-100 border border-gray-300 rounded-lg p-4 text-xs">
-              <p><strong>Debug Info:</strong></p>
-              <p>Current Role: {userRole || 'null'}</p>
-              <p>User Roles: {JSON.stringify(userRoles)}</p>
-              <p>Checking Roles: {checkingRoles ? 'true' : 'false'}</p>
-            </div>
-          )}
-
           {/* Role Selection Card - When user has roles but none is active */}
           {(userRole === Role.unauthorised || !userRole) && userRoles.length > 0 && (
             <div className="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-6">
               <div>
-                <h3 className="text-base font-semibold text-purple-900 mb-3">Select Your Profile</h3>
+                <h3 className="text-base font-semibold text-purple-900 mb-3">Изберете вашия профил</h3>
                 <p className="text-sm text-purple-700 mb-4">
-                  You have multiple profiles. Please select which one you'd like to use.
+                  Имате множество профили. Моля, изберете кой искате да използвате.
                 </p>
                 <div className="flex gap-3">
                   {userRoles.includes('client') && (
@@ -877,7 +1123,7 @@ export default function MyAccount() {
                       onClick={handleSwitchToClient}
                       className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors"
                     >
-                      Use as Client
+                      Използвай като клиент
                     </button>
                   )}
                   {userRoles.includes('tasker') && (
@@ -885,7 +1131,7 @@ export default function MyAccount() {
                       onClick={handleSwitchToTasker}
                       className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors"
                     >
-                      Use as Tasker
+                      Използвай като изпълнител
                     </button>
                   )}
                 </div>
@@ -903,9 +1149,9 @@ export default function MyAccount() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-indigo-900">Switch to Tasker Profile</h3>
+                    <h3 className="text-base font-semibold text-indigo-900">Превключи към профил на изпълнител</h3>
                     <p className="text-sm text-indigo-700 mt-1">
-                      You have a tasker profile. Switch to access tasker features, manage your services, and view task requests.
+                      Имате профил на изпълнител. Превключете, за да получите достъп до функциите за изпълнители, управление на услуги и заявки за задачи.
                     </p>
                   </div>
                 </div>
@@ -914,7 +1160,7 @@ export default function MyAccount() {
                   disabled={checkingRoles}
                   className="ml-4 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
-                  Switch to Tasker
+                  Превключи към изпълнител
                 </button>
               </div>
             </div>
@@ -929,9 +1175,9 @@ export default function MyAccount() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-green-900">Become a Tasker</h3>
+                    <h3 className="text-base font-semibold text-green-900">Станете изпълнител</h3>
                     <p className="text-sm text-green-700 mt-1">
-                      Start earning by offering your services. Create a tasker profile to get started.
+                      Започнете да печелите, като предлагате вашите услуги. Създайте профил на изпълнител, за да започнете.
                     </p>
                   </div>
                 </div>
@@ -940,7 +1186,7 @@ export default function MyAccount() {
                   disabled={checkingRoles}
                   className="ml-4 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
-                  Create Tasker Profile
+                  Създай профил на изпълнител
                 </button>
               </div>
             </div>
@@ -955,9 +1201,9 @@ export default function MyAccount() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-indigo-900">Switch to Client Profile</h3>
+                    <h3 className="text-base font-semibold text-indigo-900">Превключи към клиентски профил</h3>
                     <p className="text-sm text-indigo-700 mt-1">
-                      You have a client profile. Switch to book services and manage your bookings.
+                      Имате клиентски профил. Превключете, за да резервирате услуги и управлявате вашите резервации.
                     </p>
                   </div>
                 </div>
@@ -966,7 +1212,7 @@ export default function MyAccount() {
                   disabled={checkingRoles}
                   className="ml-4 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
-                  Switch to Client
+                  Превключи към клиент
                 </button>
               </div>
             </div>
@@ -981,9 +1227,9 @@ export default function MyAccount() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-green-900">Create Client Profile</h3>
+                    <h3 className="text-base font-semibold text-green-900">Създай клиентски профил</h3>
                     <p className="text-sm text-green-700 mt-1">
-                      Book services as a client. Create a client profile to get started.
+                      Резервирайте услуги като клиент. Създайте клиентски профил, за да започнете.
                     </p>
                   </div>
                 </div>
@@ -992,7 +1238,7 @@ export default function MyAccount() {
                   disabled={checkingRoles}
                   className="ml-4 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
-                  Create Client Profile
+                  Създай клиентски профил
                 </button>
               </div>
             </div>
@@ -1005,9 +1251,9 @@ export default function MyAccount() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <h3 className="text-sm font-medium text-blue-900">Account Information</h3>
+                <h3 className="text-sm font-medium text-blue-900">Информация за акаунта</h3>
                 <p className="text-sm text-blue-700 mt-1">
-                  Keep your contact information up to date to ensure smooth communication with taskers and service providers.
+                  Поддържайте вашата контактна информация актуална, за да осигурите безпроблемна комуникация с изпълнители и доставчици на услуги.
                 </p>
               </div>
             </div>

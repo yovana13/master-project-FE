@@ -31,7 +31,7 @@ export default function ViewReviewModal({ isOpen, booking, review, onClose }: Vi
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Your Review</h2>
+          <h2 className="text-xl font-bold text-gray-900">Вашият отзив</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
@@ -43,16 +43,13 @@ export default function ViewReviewModal({ isOpen, booking, review, onClose }: Vi
         </div>
 
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Review for:</p>
-          <p className="font-medium text-gray-900">
-            {booking.user?.name || booking.tasker?.display_name || 'N/A'}
-          </p>
-          <p className="text-sm text-gray-600">{booking.service.name}</p>
+          <p className="text-sm text-gray-600 mb-1">Отзив за: {booking.user?.name || booking.tasker?.display_name || 'Няма'}</p>
+          <p className="text-sm text-gray-600">Услуга: {booking.service.name}</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Оценка</label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
@@ -77,13 +74,13 @@ export default function ViewReviewModal({ isOpen, booking, review, onClose }: Vi
 
           {review.comment && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Коментар</label>
               <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">{review.comment}</p>
             </div>
           )}
 
           <div className="text-sm text-gray-500">
-            Reviewed on {new Date(review.createdAt || review.created_at || '').toLocaleDateString('en-US', {
+            Отзив от {new Date(review.createdAt || review.created_at || '').toLocaleDateString('bg-BG', {
               month: 'long',
               day: 'numeric',
               year: 'numeric',
@@ -96,7 +93,7 @@ export default function ViewReviewModal({ isOpen, booking, review, onClose }: Vi
             onClick={onClose}
             className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
           >
-            Close
+            Затвори
           </button>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { CITIES_BULGARIA } from '../constants/cities'
 import { Role } from '../enums/role.enum'
 import InfoMessage from '../components/InfoMessage'
 import AdminsTable from '../components/AdminsTable'
+import BookingModal from '../components/BookingModal'
 
 interface Category {
   id: number;
@@ -73,15 +74,6 @@ export default function Home() {
   // Tasker bookings state
   const [taskerBookings, setTaskerBookings] = useState<TaskerBooking[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
-  
-  // Modal form states
-  const [city, setCity] = useState('');
-  const [citySearch, setCitySearch] = useState('');
-  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
-  const [address, setAddress] = useState('');
-  const [hours, setHours] = useState('');
-  const [squareMeters, setSquareMeters] = useState('');
-  const [additionalDescription, setAdditionalDescription] = useState('');
   
   // Info message state
   const [infoMessage, setInfoMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -232,57 +224,33 @@ export default function Home() {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedService(null);
-    setCity('');
-    setCitySearch('');
-    setIsCityDropdownOpen(false);
-    setAddress('');
-    setHours('');
-    setSquareMeters('');
-    setAdditionalDescription('');
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedService) return;
-
+  const handleBookingSubmit = (bookingData: {
+    serviceId: number;
+    serviceName: string;
+    pricingModel: 'hourly' | 'sq_m';
+    city: string;
+    address: string;
+    hours?: string;
+    squareMeters?: string;
+    additionalDescription: string;
+  }) => {
     // Store booking data in sessionStorage
-    const bookingData = {
-      serviceId: selectedService.id,
-      serviceName: selectedService.name,
-      pricingModel: selectedService.pricing_model,
-      city,
-      address,
-      hours: selectedService.pricing_model === 'hourly' ? hours : undefined,
-      squareMeters: selectedService.pricing_model === 'sq_m' ? squareMeters : undefined,
-      additionalDescription,
-    };
-
     sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
 
     // Navigate to booking page
-    router.push(`/book/${selectedService.id}`);
+    router.push(`/book/${bookingData.serviceId}`);
   };
 
   const filteredServices = services.filter(
     service => service.category_id === activeCategory
   );
 
-  const filteredCities = Object.entries(CITIES_BULGARIA).filter(([key, value]) =>
-    key.toLowerCase().includes(citySearch.toLowerCase()) ||
-    value.toLowerCase().includes(citySearch.toLowerCase())
-  );
-
-  const handleCitySelect = (cityKey: string) => {
-    setCity(cityKey);
-    setCitySearch(cityKey);
-    setIsCityDropdownOpen(false);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600">Зареждане...</div>
       </div>
     );
   }
@@ -290,8 +258,8 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Master Project - Home Services</title>
-        <meta name="description" content="Master project frontend" />
+        <title>TaskTrust - Домашни услуги</title>
+        <meta name="description" content="TaskTrust - Платформа за домашни услуги" />
       </Head>
 
       <main className="min-h-screen bg-gray-50">
@@ -300,25 +268,25 @@ export default function Home() {
           <div className="bg-white border-b">
             <div className="px-4 sm:px-6 lg:px-8 py-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Your Active Tasks</h2>
+                <h2 className="text-xl font-bold text-gray-900">Вашите активни задачи</h2>
                 {taskerBookings.length > 0 && (
                   <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
-                    {taskerBookings.length} {taskerBookings.length === 1 ? 'task' : 'tasks'}
+                    {taskerBookings.length} {taskerBookings.length === 1 ? 'задача' : 'задачи'}
                   </span>
                 )}
               </div>
 
               {loadingBookings ? (
                 <div className="text-center py-8">
-                  <div className="text-gray-600">Loading your tasks...</div>
+                  <div className="text-gray-600">Зареждане на задачите...</div>
                 </div>
               ) : taskerBookings.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-lg">
                   <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
-                  <p className="text-gray-600 font-medium">No active tasks</p>
-                  <p className="text-gray-500 text-sm mt-1">Pending and accepted bookings will appear here</p>
+                  <p className="text-gray-600 font-medium">Няма активни задачи</p>
+                  <p className="text-gray-500 text-sm mt-1">Чакащите и приетите резервации ще се показват тук</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -336,7 +304,7 @@ export default function Home() {
                               : 'bg-green-100 text-green-800'
                           }`}
                         >
-                          {booking.status === 'pending' ? 'Pending' : 'Accepted'}
+                          {booking.status === 'pending' ? 'Чакаща' : 'Приета'}
                         </span>
                         <span className="text-lg font-bold text-gray-900">
                           ${(booking.priceCents / 100).toFixed(2)}
@@ -394,13 +362,13 @@ export default function Home() {
                             onClick={() => handleDeclineBooking(booking.id)}
                             className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
                           >
-                            Decline
+                            Откажи
                           </button>
                           <button
                             onClick={() => handleAcceptBooking(booking.id)}
                             className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
                           >
-                            Accept
+                            Приеми
                           </button>
                         </div>
                       ) : (
@@ -415,13 +383,13 @@ export default function Home() {
                             }}
                             className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
                           >
-                            Contact Client
+                            Свържи се с клиента
                           </button>
                           <button
                             onClick={() => handleCompleteBooking(booking.id)}
                             className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
                           >
-                            Mark as Complete
+                            Маркирай като завършена
                           </button>
                         </div>
                       )}
@@ -436,18 +404,6 @@ export default function Home() {
         {/* Admin Table Section */}
         {userRole === Role.admin && (
           <div className="px-4 sm:px-6 lg:px-8 py-8">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
-              <button
-                onClick={() => router.push('/bug-reports')}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                View Bug Reports
-              </button>
-            </div>
             <AdminsTable />
           </div>
         )}
@@ -503,7 +459,7 @@ export default function Home() {
                 )}
                 {service.base_price && (
                   <p className="text-sm text-gray-600 mt-2">
-                    From <span className="font-semibold">${service.base_price}</span>
+                    От <span className="font-semibold">${service.base_price}</span>
                   </p>
                 )}
               </button>
@@ -512,7 +468,7 @@ export default function Home() {
 
           {filteredServices.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500">No services available in this category yet.</p>
+              <p className="text-gray-500">Все още няма налични услуги в тази категория.</p>
             </div>
           )}
         </div>
@@ -520,143 +476,12 @@ export default function Home() {
       </main>
 
       {/* Booking Modal */}
-      {showModal && selectedService && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Book {selectedService.name}</h2>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={handleBookingSubmit} className="space-y-4">
-              <div className="relative">
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                  City *
-                </label>
-                <input
-                  id="city"
-                  type="text"
-                  required
-                  value={citySearch}
-                  onChange={(e) => {
-                    setCitySearch(e.target.value);
-                    setIsCityDropdownOpen(true);
-                    if (!e.target.value) setCity('');
-                  }}
-                  onFocus={() => setIsCityDropdownOpen(true)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Search for a city..."
-                  autoComplete="off"
-                />
-                {isCityDropdownOpen && filteredCities.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                    {filteredCities.map(([key, value]) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => handleCitySelect(key)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
-                      >
-                        {key} ({value})
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                  Address *
-                </label>
-                <input
-                  id="address"
-                  type="text"
-                  required
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Enter your address"
-                />
-              </div>
-
-              {selectedService.pricing_model === 'hourly' && (
-                <div>
-                  <label htmlFor="hours" className="block text-sm font-medium text-gray-700 mb-1">
-                    How many hours do you need? *
-                  </label>
-                  <input
-                    id="hours"
-                    type="number"
-                    min="1"
-                    step="0.5"
-                    required
-                    value={hours}
-                    onChange={(e) => setHours(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., 2"
-                  />
-                </div>
-              )}
-
-              {selectedService.pricing_model === 'sq_m' && (
-                <div>
-                  <label htmlFor="squareMeters" className="block text-sm font-medium text-gray-700 mb-1">
-                    How many square meters? *
-                  </label>
-                  <input
-                    id="squareMeters"
-                    type="number"
-                    min="1"
-                    step="0.1"
-                    required
-                    value={squareMeters}
-                    onChange={(e) => setSquareMeters(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., 50"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label htmlFor="additionalDescription" className="block text-sm font-medium text-gray-700 mb-1">
-                  Additional Description
-                </label>
-                <textarea
-                  id="additionalDescription"
-                  rows={4}
-                  value={additionalDescription}
-                  onChange={(e) => setAdditionalDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Any additional details that would help the tasker..."
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                  Continue
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <BookingModal
+        isOpen={showModal}
+        service={selectedService}
+        onClose={handleCloseModal}
+        onSubmit={handleBookingSubmit}
+      />
 
       {/* Info Message */}
       {infoMessage && (

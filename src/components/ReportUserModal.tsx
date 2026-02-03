@@ -61,8 +61,8 @@ export default function ReportUserModal({ isOpen, reporterId, reportedUserId, re
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">Report a User</h3>
-            <p className="text-sm text-gray-600 mt-1">Report inappropriate behavior or violations</p>
+            <h3 className="text-xl font-semibold text-gray-900">Докладвай потребител</h3>
+            <p className="text-sm text-gray-600 mt-1">Докладвайте неподходящо поведение или нарушения</p>
           </div>
           <button
             onClick={onClose}
@@ -78,15 +78,14 @@ export default function ReportUserModal({ isOpen, reporterId, reportedUserId, re
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Reported User Info */}
           <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reporting</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Докладвате</label>
             <p className="text-sm font-semibold text-gray-900">{reportedUserName}</p>
-            <p className="text-xs text-gray-500">ID: {reportedUserId}</p>
           </div>
 
           {/* Reason */}
           <div>
             <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-              Reason *
+              Причина *
             </label>
             <select
               id="reason"
@@ -95,20 +94,20 @@ export default function ReportUserModal({ isOpen, reporterId, reportedUserId, re
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">Select a reason...</option>
-              <option value="harassment">Harassment</option>
-              <option value="scam">Scam</option>
-              <option value="inappropriate_behavior">Inappropriate behavior</option>
-              <option value="no_show">No show</option>
-              <option value="poor_service">Poor service</option>
-              <option value="other">Other</option>
+              <option value="">Изберете причина...</option>
+              <option value="harassment">Тормоз</option>
+              <option value="scam">Измама</option>
+              <option value="inappropriate_behavior">Неподходящо поведение</option>
+              <option value="no_show">Неявяване</option>
+              <option value="poor_service">Лоша услуга</option>
+              <option value="other">Друго</option>
             </select>
           </div>
 
           {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description *
+              Описание *
             </label>
             <textarea
               id="description"
@@ -117,7 +116,7 @@ export default function ReportUserModal({ isOpen, reporterId, reportedUserId, re
               required
               rows={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-              placeholder="Please provide detailed information about why you're reporting this user..."
+              placeholder="Моля, предоставете подробна информация защо докладвате този потребител..."
             />
           </div>
 
@@ -129,7 +128,7 @@ export default function ReportUserModal({ isOpen, reporterId, reportedUserId, re
               disabled={submitting}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50"
             >
-              Cancel
+              Отказ
             </button>
             <button
               type="submit"
@@ -142,10 +141,10 @@ export default function ReportUserModal({ isOpen, reporterId, reportedUserId, re
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Submitting...
+                  Изпращане...
                 </>
               ) : (
-                'Submit Report'
+                'Изпрати доклад'
               )}
             </button>
           </div>

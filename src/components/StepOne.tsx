@@ -53,12 +53,12 @@ export default function StepOne({
 
   const submitTaskerProfile = async () => {
     if (!userId) {
-      setError('You must be logged in to become a tasker');
+      setError('Трябва да сте влезли в профила си, за да станете изпълнител');
       return;
     }
 
     if (cities.length === 0) {
-      setError('Please select at least one city');
+      setError('Моля, изберете поне един град');
       return;
     }
 
@@ -87,8 +87,8 @@ export default function StepOne({
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to create tasker profile' }));
-        throw new Error(error.message || 'Failed to create tasker profile');
+        const error = await response.json().catch(() => ({ message: 'Неуспешно създаване на профил на изпълнител' }));
+        throw new Error(error.message || 'Неуспешно създаване на профил на изпълнител');
       }
 
       console.log('Tasker profile created successfully');
@@ -104,8 +104,8 @@ export default function StepOne({
       });
 
       if (!citiesResponse.ok) {
-        const error = await citiesResponse.json().catch(() => ({ message: 'Failed to save cities' }));
-        throw new Error(error.message || 'Failed to save cities');
+        const error = await citiesResponse.json().catch(() => ({ message: 'Неуспешно запазване на градове' }));
+        throw new Error(error.message || 'Неуспешно запазване на градове');
       }
 
       console.log('Cities saved successfully');
@@ -113,7 +113,7 @@ export default function StepOne({
       // Move to next step after successful save
       onNext();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create tasker profile. Please try again.');
+      setError(err instanceof Error ? err.message : 'Неуспешно създаване на профил на изпълнител. Моля, опитайте отново.');
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +124,7 @@ export default function StepOne({
       <div className="rounded-md shadow-sm space-y-4">
         <div>
           <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-            Display Name
+            Три имена
           </label>
           <input
             id="displayName"
@@ -134,13 +134,13 @@ export default function StepOne({
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="Your professional name"
+            placeholder="Вашето цяло име"
           />
         </div>
 
         <div>
           <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
-            Gender
+            Пол
           </label>
           <select
             id="gender"
@@ -150,15 +150,15 @@ export default function StepOne({
             onChange={(e) => setGender(e.target.value)}
             className="appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
           >
-            <option value="">Select gender</option>
-            <option value="male">male</option>
-            <option value="female">female</option>
+            <option value="">Изберете пол</option>
+            <option value="male">Мъж</option>
+            <option value="female">Жена</option>
           </select>
         </div>
         
         <div>
           <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-            Bio
+            Биография
           </label>
           <textarea
             id="bio"
@@ -168,13 +168,13 @@ export default function StepOne({
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="Tell us about your skills and experience..."
+            placeholder="Разкажете ни за вашите умения и опит..."
           />
         </div>
 
         <div>
           <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-            Address
+            Адрес
           </label>
           <input
             id="address"
@@ -184,33 +184,41 @@ export default function StepOne({
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="Your address"
+            placeholder="Вашият адрес"
           />
         </div>
 
         <CitiesSelector
           selectedCities={cities}
           onCitiesChange={setCities}
-          label="Cities *"
-          description="Select the cities where you're willing to work"
+          label="Градове *"
+          description="Изберете градовете, в които сте готови да работите"
           showSelectedCities={false}
         />
 
         <div>
-          <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
-            Profile Image
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Профилна снимка
           </label>
-          <input
-            id="profileImage"
-            name="profileImage"
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-          />
-          {profileImage && (
-            <p className="mt-1 text-xs text-gray-500">Selected: {profileImage.name}</p>
-          )}
+          <div className="flex items-center gap-3">
+            <label
+              htmlFor="profileImage"
+              className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Избери файл
+            </label>
+            <input
+              id="profileImage"
+              name="profileImage"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {profileImage && (
+              <p className="text-sm text-gray-600">{profileImage.name}</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -220,7 +228,7 @@ export default function StepOne({
           disabled={isLoading}
           className="w-full py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Saving...' : 'Next'}
+          {isLoading ? 'Запазване...' : 'Напред'}
         </button>
       </div>
     </form>

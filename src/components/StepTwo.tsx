@@ -60,7 +60,7 @@ export default function StepTwo({
       setServices(data);
     } catch (error) {
       console.error('Failed to fetch services:', error);
-      setError('Failed to load services');
+      setError('Неуспешно зареждане на услуги');
     }
   };
 
@@ -107,7 +107,7 @@ export default function StepTwo({
 
   const submitTaskerService = async () => {
     if (!userId) {
-      setError('You must be logged in');
+      setError('Трябва да сте влезли в профила си');
       return;
     }
 
@@ -115,19 +115,19 @@ export default function StepTwo({
     for (let i = 0; i < taskerServices.length; i++) {
       const service = taskerServices[i];
       if (!service.service_id) {
-        setError(`Please select a service for item ${i + 1}`);
+        setError(`Моля, изберете услуга за елемент ${i + 1}`);
         return;
       }
       if (service.pricing_model === 'hourly' && !service.price_hourly) {
-        setError(`Please enter price per hour for service ${i + 1}`);
+        setError(`Моля, въведете цена на час за услуга ${i + 1}`);
         return;
       }
       if (service.pricing_model === 'sq_m' && !service.price_per_sq_m) {
-        setError(`Please enter price per square meter for service ${i + 1}`);
+        setError(`Моля, въведете цена на квадратен метър за услуга ${i + 1}`);
         return;
       }
       if (service.pricing_model === 'sq_m' && !service.time_per_sq_m) {
-        setError(`Please enter time per square meter for service ${i + 1}`);
+        setError(`Моля, въведете време на квадратен метър за услуга ${i + 1}`);
         return;
       }
     }
@@ -142,8 +142,8 @@ export default function StepTwo({
       for (const service of taskerServices) {
         const requestBody: any = {
           service_id: service.service_id,
-          price_hourly: service.price_hourly ? parseInt(service.price_hourly) : undefined,
-          price_per_sq_m: service.price_per_sq_m ? parseInt(service.price_per_sq_m) : undefined,
+          price_hourly: service.price_hourly ? Math.round(parseFloat(service.price_hourly) * 100) : undefined,
+          price_per_sq_m: service.price_per_sq_m ? Math.round(parseFloat(service.price_per_sq_m) * 100) : undefined,
           time_per_sq_m: service.time_per_sq_m ? parseInt(service.time_per_sq_m) : undefined,
           min_booking_minutes: service.min_booking_minutes ? parseInt(service.min_booking_minutes) : undefined,
           notes: service.notes || ''
@@ -159,8 +159,8 @@ export default function StepTwo({
         });
 
         if (!response.ok) {
-          const error = await response.json().catch(() => ({ message: 'Failed to add service' }));
-          throw new Error(error.message || 'Failed to add service');
+          const error = await response.json().catch(() => ({ message: 'Неуспешно добавяне на услуга' }));
+          throw new Error(error.message || 'Неуспешно добавяне на услуга');
         }
       }
 
@@ -169,7 +169,7 @@ export default function StepTwo({
       // Move to next step after successful save
       onNext();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add services. Please try again.');
+      setError(err instanceof Error ? err.message : 'Неуспешно добавяне на услуги. Моля, опитайте отново.');
     } finally {
       setIsLoading(false);
     }
@@ -184,21 +184,21 @@ export default function StepTwo({
           return (
             <div key={index} className="border border-gray-300 rounded-lg p-4 space-y-4">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-medium text-gray-900">Service {index + 1}</h3>
+                <h3 className="text-lg font-medium text-gray-900">Услуга {index + 1}</h3>
                 {taskerServices.length > 1 && (
                   <button
                     type="button"
                     onClick={() => handleRemoveService(index)}
                     className="text-red-600 hover:text-red-800 text-sm font-medium"
                   >
-                    Remove
+                    Премахни
                   </button>
                 )}
               </div>
 
               <div>
                 <label htmlFor={`serviceId-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                  Service *
+                  Услуга *
                 </label>
                 <select
                   id={`serviceId-${index}`}
@@ -207,7 +207,7 @@ export default function StepTwo({
                   onChange={(e) => handleServiceChange(index, 'service_id', e.target.value)}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 >
-                  <option value="">Select a service</option>
+                  <option value="">Изберете услуга</option>
                   {services.map((service) => (
                     <option key={service.id} value={service.id}>
                       {service.name}
@@ -220,7 +220,7 @@ export default function StepTwo({
                 <>
                   <div>
                     <label htmlFor={`priceHourly-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Price per Hour (£) *
+                      Цена на час (евро) *
                     </label>
                     <input
                       id={`priceHourly-${index}`}
@@ -237,7 +237,7 @@ export default function StepTwo({
 
                   <div>
                     <label htmlFor={`minBookingMinutes-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Minimum Booking (minutes)
+                      Минимална резервация (минути)
                     </label>
                     <input
                       id={`minBookingMinutes-${index}`}
@@ -257,7 +257,7 @@ export default function StepTwo({
                 <>
                   <div>
                     <label htmlFor={`pricePerSqM-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Price per Square Meter (£) *
+                      Цена на квадратен метър (евро) *
                     </label>
                     <input
                       id={`pricePerSqM-${index}`}
@@ -274,7 +274,7 @@ export default function StepTwo({
 
                   <div>
                     <label htmlFor={`timePerSqM-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Time Needed per Square Meter (minutes) *
+                      Необходимо време на квадратен метър (минути) *
                     </label>
                     <input
                       id={`timePerSqM-${index}`}
@@ -291,7 +291,7 @@ export default function StepTwo({
 
                   <div>
                     <label htmlFor={`minBooking-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Minimum Booking (sq meters)
+                      Минимална резервация (кв. метри)
                     </label>
                     <input
                       id={`minBooking-${index}`}
@@ -309,7 +309,7 @@ export default function StepTwo({
 
               <div>
                 <label htmlFor={`notes-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes (Optional)
+                  Бележки (опционално)
                 </label>
                 <textarea
                   id={`notes-${index}`}
@@ -317,7 +317,7 @@ export default function StepTwo({
                   value={taskerService.notes}
                   onChange={(e) => handleServiceChange(index, 'notes', e.target.value)}
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Available weekdays, special requirements..."
+                  placeholder="Достъпен през седмицата, специални изисквания..."
                 />
               </div>
             </div>
@@ -329,7 +329,7 @@ export default function StepTwo({
           onClick={handleAddService}
           className="w-full py-2 px-4 border-2 border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:border-indigo-500 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          + Add Another Service
+          + Добави друга услуга
         </button>
       </div>
 
@@ -340,14 +340,14 @@ export default function StepTwo({
           disabled={isLoading}
           className="flex-1 py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
-          Back
+          Назад
         </button>
         <button
           type="submit"
           disabled={isLoading}
           className="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Saving...' : 'Next'}
+          {isLoading ? 'Запазване...' : 'Напред'}
         </button>
       </div>
     </form>

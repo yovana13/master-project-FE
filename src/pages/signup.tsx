@@ -21,12 +21,12 @@ export default function Signup() {
 
     // Validation
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Паролите не съвпадат');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Паролата трябва да бъде поне 6 символа');
       return;
     }
 
@@ -50,8 +50,6 @@ export default function Signup() {
         roles
       });
       
-      console.log('Signup successful:', response);
-      
       // Store token and update context
       if (response.token) {
         localStorage.setItem('token', response.token);
@@ -69,7 +67,7 @@ export default function Signup() {
         router.push('/');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed. Please try again.');
+      setError(err instanceof Error ? err.message : 'Регистрацията не успя. Моля, опитайте отново.');
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +78,12 @@ export default function Signup() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            Създайте профил
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{' '}
+            Имате профил?{' '}
             <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign in
+              Влезте в профила си
             </a>
           </p>
         </div>
@@ -93,7 +91,7 @@ export default function Signup() {
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Full Name
+                Пълно име
               </label>
               <input
                 id="name"
@@ -103,13 +101,13 @@ export default function Signup() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="John Doe"
+                placeholder="Иван Иванов"
               />
             </div>
             
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
+                Имейл адрес
               </label>
               <input
                 id="email"
@@ -120,13 +118,13 @@ export default function Signup() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="john@example.com"
+                placeholder="ivan@example.com"
               />
             </div>
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
+                Телефонен номер
               </label>
               <input
                 id="phone"
@@ -142,7 +140,7 @@ export default function Signup() {
 
             <div>
               <label htmlFor="userType" className="block text-sm font-medium text-gray-700 mb-1">
-                I want to join as
+                Искам да се регистрирам като
               </label>
               <select
                 id="userType"
@@ -152,15 +150,15 @@ export default function Signup() {
                 onChange={(e) => setUserType(e.target.value as 'client' | 'tasker' | 'both')}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               >
-                <option value="client">Client</option>
-                <option value="tasker">Tasker</option>
-                <option value="both">Both (Client and Tasker)</option>
+                <option value="client">Клиент</option>
+                <option value="tasker">Изпълнител</option>
+                <option value="both">И двете (Клиент и Изпълнител)</option>
               </select>
             </div>
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                Парола
               </label>
               <input
                 id="password"
@@ -177,7 +175,7 @@ export default function Signup() {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                Потвърдете паролата
               </label>
               <input
                 id="confirmPassword"
@@ -205,7 +203,7 @@ export default function Signup() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating account...' : 'Sign up'}
+              {isLoading ? 'Създаване на профил...' : 'Регистрирай се'}
             </button>
           </div>
         </form>

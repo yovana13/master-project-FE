@@ -95,7 +95,7 @@ export default function MyBookings() {
       setBookings(data);
     } catch (err) {
       console.error('Error fetching bookings:', err);
-      setError('Failed to load bookings. Please try again.');
+      setError('Неуспешно зареждане на резервациите. Моля, опитайте отново.');
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ export default function MyBookings() {
   };
 
   const handleReportSuccess = () => {
-    setReportSuccess('Report submitted successfully. Thank you for helping keep our community safe.');
+    setReportSuccess('Докладът е изпратен успешно. Благодарим ви, че помагате за безопасността на общността.');
     setShowReportUserModal(false);
     setReportedUser(null);
     setTimeout(() => setReportSuccess(null), 5000);
@@ -136,7 +136,7 @@ export default function MyBookings() {
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('bg-BG', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
@@ -146,10 +146,10 @@ export default function MyBookings() {
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString('bg-BG', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true,
+      hour12: false,
     });
   };
 
@@ -173,9 +173,15 @@ export default function MyBookings() {
   };
 
   const formatStatus = (status: string) => {
-    return status.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    const statusMap: { [key: string]: string } = {
+      'pending': 'Чакаща',
+      'accepted': 'Приета',
+      'completed': 'Завършена',
+      'canceled': 'Отменена',
+      'declined': 'Отклонена',
+      'no_show': 'Неявяване'
+    };
+    return statusMap[status] || status;
   };
 
   const canEdit = (status: Booking['status']) => {
@@ -191,14 +197,14 @@ export default function MyBookings() {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-lg font-semibold text-gray-900">
-              {booking.service?.name || 'Service'}
+              {booking.service?.name || 'Услуга'}
             </h3>
             <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(booking.status)}`}>
               {formatStatus(booking.status)}
             </span>
           </div>
           <p className="text-sm text-gray-600">
-            Booking ID: {booking.id.substring(0, 8)}...
+            ID на резервация: {booking.id}
           </p>
         </div>
         <div className="text-right">
@@ -229,7 +235,7 @@ export default function MyBookings() {
               <p className="text-sm font-medium text-gray-900">
                 {booking.user.display_name}
               </p>
-              <p className="text-xs text-gray-500">Client</p>
+              <p className="text-xs text-gray-500">Клиент</p>
             </div>
           </div>
         )}
@@ -256,14 +262,14 @@ export default function MyBookings() {
                   {booking.tasker.display_name}
                 </p>
                 {booking.tasker.verification_status === 'verified' && (
-                  <span className="inline-flex items-center text-blue-600" title="Verified Tasker">
+                  <span className="inline-flex items-center text-blue-600" title="Потвърден изпълнител">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500">Tasker</p>
+              <p className="text-xs text-gray-500">Изпълнител</p>
             </div>
           </div>
         )}
@@ -296,14 +302,14 @@ export default function MyBookings() {
         {booking.details && (
           <div className="pt-3 border-t border-gray-200">
             <p className="text-sm text-gray-600">
-              <span className="font-medium text-gray-700">Details:</span> {booking.details}
+              <span className="font-medium text-gray-700">Детайли:</span> {booking.details}
             </p>
           </div>
         )}
 
         {/* Created Date */}
         <div className="pt-2 text-xs text-gray-500">
-          Booked on {new Date(booking.createdAt).toLocaleDateString('en-US', {
+          Резервирана на {new Date(booking.createdAt).toLocaleDateString('bg-BG', {
             month: 'short',
             day: 'numeric',
             year: 'numeric',
@@ -321,13 +327,13 @@ export default function MyBookings() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            Edit Booking
+            Редактирай резервация
           </button>
           {userRole === Role.client && booking.tasker && (
             <button
               onClick={() => handleReportUser(booking.taskerId, booking.tasker!.display_name)}
               className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-              title="Report Tasker"
+              title="Докладвай изпълнител"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -338,7 +344,7 @@ export default function MyBookings() {
             <button
               onClick={() => handleReportUser(booking.userId, booking.user!.display_name)}
               className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-              title="Report Client"
+              title="Докладвай клиент"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -353,7 +359,7 @@ export default function MyBookings() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading your bookings...</div>
+        <div className="text-gray-600">Зареждане на вашите резервации...</div>
       </div>
     );
   }
@@ -361,37 +367,9 @@ export default function MyBookings() {
   return (
     <div>
       <Head>
-        <title>My Bookings</title>
-        <meta name="description" content="View all your bookings" />
+        <title>Моите резервации</title>
+        <meta name="description" content="Преглед на всички ваши резервации" />
       </Head>
-
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
-            </div>
-            <button
-              onClick={fetchBookings}
-              className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
-            >
-              <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh
-            </button>
-          </div>
-        </div>
-      </header>
 
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -412,20 +390,20 @@ export default function MyBookings() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No bookings yet</h3>
-              <p className="text-gray-600 mb-6">Start by booking a service!</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Още няма резервации</h3>
+              <p className="text-gray-600 mb-6">Започнете, като резервирате услуга!</p>
               <button
                 onClick={() => router.push('/')}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
               >
-                Browse Services
+                Разгледай услуги
               </button>
             </div>
           ) : (
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                Active Bookings
+                Активни резервации
                 <span className="text-sm font-normal text-gray-500">({bookings.length})</span>
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -84,13 +84,13 @@ export default function BookingCalendar({
     return date.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit',
-      hour12: true 
+      hour12: false 
     });
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('bg-BG', { 
       weekday: 'long',
       month: 'long', 
       day: 'numeric',
@@ -197,13 +197,15 @@ export default function BookingCalendar({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Select a Time Slot</h2>
-              <p className="text-sm text-gray-600 mt-1">Booking with {taskerName}</p>
+              <h2 className="text-2xl font-bold text-gray-900">Изберете часови слот за резервация с {taskerName}</h2>
               {pricingModel === 'sq_m' && squareMeters && (
                 <p className="text-sm text-indigo-600 mt-1">
-                  Estimated duration: {bookingHours} hour{bookingHours !== 1 ? 's' : ''} for {squareMeters} m²
+                  Предполагаема продължителност: {bookingHours} час{bookingHours !== 1 ? 'а' : ''} за {squareMeters} m²
                 </p>
               )}
+              <p className="text-sm text-gray-500 mt-2">
+                В момента резервирате за {bookingHours} час{bookingHours !== 1 ? 'а' : ''}. Крайната цена ще бъде автоматично изчислена след потвърждаване на резервацията.
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -222,7 +224,7 @@ export default function BookingCalendar({
               disabled={!canGoPrevious()}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ← Previous Week
+              ← Предишна седмица
             </button>
             <div className="text-sm font-medium text-gray-900">
               {startDate && endDate && (
@@ -235,7 +237,7 @@ export default function BookingCalendar({
               onClick={handleNextWeek}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Next Week →
+              Следваща седмица →
             </button>
           </div>
 
@@ -243,7 +245,7 @@ export default function BookingCalendar({
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)]">
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-gray-600">Loading availability...</div>
+                <div className="text-gray-600">Зареждане на наличност...</div>
               </div>
             ) : error ? (
               <div className="text-center py-12">
@@ -251,8 +253,8 @@ export default function BookingCalendar({
               </div>
             ) : availability.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">No available time slots for this week.</p>
-                <p className="text-sm text-gray-500 mt-2">Try selecting a different week.</p>
+                <p className="text-gray-600">Няма налични часови слотове за тази седмица.</p>
+                <p className="text-sm text-gray-500 mt-2">Опитайте да изберете друга седмица.</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -263,12 +265,12 @@ export default function BookingCalendar({
                     </h3>
                     
                     {day.availableSlots.length === 0 ? (
-                      <p className="text-sm text-gray-500">No available slots</p>
+                      <p className="text-sm text-gray-500">Няма налични слотове</p>
                     ) : (() => {
                       const availableStartTimes = generateAvailableStartTimes(day.availableSlots);
                       
                       if (availableStartTimes.length === 0) {
-                        return <p className="text-sm text-gray-500">No available start times for {bookingHours} hour booking</p>;
+                        return <p className="text-sm text-gray-500">Няма налични начални часове за {bookingHours} часова резервация</p>;
                       }
                       
                       return (
@@ -306,10 +308,10 @@ export default function BookingCalendar({
             <div className="text-sm text-gray-600">
               {selectedSlot ? (
                 <span>
-                  Selected: {formatDate(selectedSlot.date)} at {formatTime(selectedSlot.startTime)} ({bookingHours} hour{bookingHours !== 1 ? 's' : ''})
+                  Избрано: {formatDate(selectedSlot.date)} в {formatTime(selectedSlot.startTime)} ({bookingHours} час{bookingHours !== 1 ? 'а' : ''})
                 </span>
               ) : (
-                <span>Please select a start time</span>
+                <span>Моля, изберете начален час</span>
               )}
             </div>
             <div className="flex gap-3">
@@ -317,14 +319,14 @@ export default function BookingCalendar({
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               >
-                Cancel
+                Отказ
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={!selectedSlot}
                 className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Confirm Booking
+                Потвърди резервация
               </button>
             </div>
           </div>

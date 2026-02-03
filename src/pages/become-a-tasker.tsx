@@ -36,21 +36,21 @@ export default function BecomeATasker() {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to check access');
+          throw new Error('Неуспешна проверка на достъпа');
         }
 
         const data = await response.json();
 
         // Redirect if user doesn't have tasker role
         if (!data.hasTaskerRole) {
-          setError('You must have a tasker role to access this page');
+          setError('Трябва да имате роля на изпълнител, за да получите достъп до тази страница');
           setTimeout(() => router.push('/'), 2000);
           return;
         }
 
         // Redirect if user already has a tasker profile
         if (data.hasTaskerProfile) {
-          setError('You already have a tasker profile');
+          setError('Вече имате профил на изпълнител');
           setTimeout(() => router.push('/'), 2000);
           return;
         }
@@ -59,7 +59,7 @@ export default function BecomeATasker() {
         setIsCheckingAccess(false);
       } catch (err) {
         console.error('Access check error:', err);
-        setError('Failed to verify access. Redirecting...');
+        setError('Неуспешна проверка на достъпа. Пренасочване...');
         setTimeout(() => router.push('/'), 2000);
       }
     };
@@ -86,20 +86,20 @@ export default function BecomeATasker() {
         {isCheckingAccess ? (
           <div className="text-center">
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Verifying access...
+              Проверка на достъпа...
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Please wait while we check your permissions
+              Моля, изчакайте, докато проверим вашите права
             </p>
           </div>
         ) : (
           <>
             <div>
               <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Become a Tasker
+                Станете изпълнител
               </h2>
               <p className="mt-2 text-center text-sm text-gray-600">
-                Complete your tasker profile to start offering services
+                Попълнете вашия профил на изпълнител, за да започнете да предлагате услуги
               </p>
             </div>
             

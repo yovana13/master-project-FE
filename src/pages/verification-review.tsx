@@ -8,6 +8,7 @@ interface PendingVerification {
   id: string;
   display_name: string;
   email: string;
+  profile_image_url?: string;
   verification_document_url: string;
   verification_document_type: 'id_card' | 'passport' | 'driver_license' | 'other';
   created_at: string;
@@ -56,14 +57,14 @@ export default function VerificationReview() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch pending verifications');
+        throw new Error('Неуспешно зареждане на чакащи верификации');
       }
 
       const data = await response.json();
       setVerifications(data);
     } catch (err) {
       console.error('Error fetching pending verifications:', err);
-      setError('Failed to load pending verifications. Please try again.');
+      setError('Неуспешно зареждане на чакащи верификации. Моля, опитайте отново.');
     } finally {
       setLoading(false);
     }
@@ -96,15 +97,15 @@ export default function VerificationReview() {
         },
         body: JSON.stringify({
           action: actionType,
-          notes: notes.trim() || (actionType === 'approve' ? 'Verification approved' : 'Verification rejected'),
+          notes: notes.trim() || (actionType === 'approve' ? 'Верификацията е одобрена' : 'Верификацията е отхвърлена'),
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to ${actionType} verification`);
+        throw new Error(`Неуспешно ${actionType === 'approve' ? 'одобрение' : 'отхвърляне'} на верификацията`);
       }
 
-      setSuccessMessage(`Verification ${actionType === 'approve' ? 'approved' : 'rejected'} successfully!`);
+      setSuccessMessage(`Верификацията е ${actionType === 'approve' ? 'одобрена' : 'отхвърлена'} успешно!`);
       setTimeout(() => setSuccessMessage(null), 5000);
 
       // Refresh the list
@@ -112,7 +113,7 @@ export default function VerificationReview() {
       handleCloseActionModal();
     } catch (err) {
       console.error(`Error ${actionType}ing verification:`, err);
-      alert(`Failed to ${actionType} verification. Please try again.`);
+      alert(`Неуспешно ${actionType === 'approve' ? 'одобрение' : 'отхвърляне'} на верификацията. Моля, опитайте отново.`);
     } finally {
       setProcessing(false);
     }
@@ -120,10 +121,10 @@ export default function VerificationReview() {
 
   const getDocumentTypeName = (type: string) => {
     switch (type) {
-      case 'id_card': return 'ID Card';
-      case 'passport': return 'Passport';
-      case 'driver_license': return "Driver's License";
-      case 'other': return 'Other';
+      case 'id_card': return 'Лична карта';
+      case 'passport': return 'Паспорт';
+      case 'driver_license': return 'Шофьорска книжка';
+      case 'other': return 'Друго';
       default: return type;
     }
   };
@@ -131,7 +132,7 @@ export default function VerificationReview() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading pending verifications...</div>
+        <div className="text-gray-600">Зареждане на чакащи верификации...</div>
       </div>
     );
   }
@@ -139,16 +140,16 @@ export default function VerificationReview() {
   return (
     <div>
       <Head>
-        <title>Verification Review - Admin</title>
+        <title>Преглед на верификации - Админ</title>
       </Head>
 
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Verification Review</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Преглед на верификации</h1>
             <p className="mt-2 text-gray-600">
-              Review and approve or reject tasker verification documents
+              Прегледайте и одобрете или отхвърлете документи за верификация на изпълнители
             </p>
           </div>
 
@@ -177,7 +178,7 @@ export default function VerificationReview() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-gray-900">{verifications.length}</p>
-                  <p className="text-sm text-gray-600">Pending Verifications</p>
+                  <p className="text-sm text-gray-600">Чакащи верификации</p>
                 </div>
               </div>
             </div>
@@ -189,8 +190,8 @@ export default function VerificationReview() {
               <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Verifications</h3>
-              <p className="text-gray-600">All verification documents have been reviewed.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Няма чакащи верификации</h3>
+              <p className="text-gray-600">Всички документи за верификация са прегледани.</p>
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -199,19 +200,19 @@ export default function VerificationReview() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tasker
+                        Изпълнител
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Document Type
+                        Тип документ
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Submitted
+                        Подаден
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Document
+                        Документ
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        Действия
                       </th>
                     </tr>
                   </thead>
@@ -219,9 +220,31 @@ export default function VerificationReview() {
                     {verifications.map((verification) => (
                       <tr key={verification.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <p className="text-sm font-medium text-gray-900">{verification.display_name}</p>
-                            <p className="text-xs text-gray-500">{verification.email}</p>
+                          <div className="flex items-center gap-3">
+                            {verification.profile_image_url ? (
+                              <a
+                                href={verification.profile_image_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-shrink-0"
+                              >
+                                <img
+                                  src={verification.profile_image_url}
+                                  alt={verification.display_name}
+                                  className="w-10 h-10 rounded-full object-cover border border-gray-200 hover:opacity-80 transition-opacity cursor-pointer"
+                                />
+                              </a>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center border border-gray-200 flex-shrink-0">
+                                <span className="text-sm font-medium text-indigo-600">
+                                  {verification.display_name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex flex-col">
+                              <p className="text-sm font-medium text-gray-900">{verification.display_name}</p>
+                              <p className="text-xs text-gray-500">{verification.email}</p>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -230,7 +253,7 @@ export default function VerificationReview() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
-                          {new Date(verification.updated_at).toLocaleDateString('en-US', {
+                          {new Date(verification.updated_at).toLocaleDateString('bg-BG', {
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
@@ -247,7 +270,7 @@ export default function VerificationReview() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            View Document
+                            Виж документ
                           </a>
                         </td>
                         <td className="px-6 py-4">
@@ -256,13 +279,13 @@ export default function VerificationReview() {
                               onClick={() => handleOpenActionModal(verification, 'approve')}
                               className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
                             >
-                              Approve
+                              Одобри
                             </button>
                             <button
                               onClick={() => handleOpenActionModal(verification, 'reject')}
                               className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
                             >
-                              Reject
+                              Отхвърли
                             </button>
                           </div>
                         </td>
@@ -283,7 +306,7 @@ export default function VerificationReview() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
-                {actionType === 'approve' ? 'Approve' : 'Reject'} Verification
+                {actionType === 'approve' ? 'Одобри' : 'Отхвърли'} верификация
               </h3>
               <button
                 onClick={handleCloseActionModal}
@@ -299,9 +322,9 @@ export default function VerificationReview() {
             <div className="p-6">
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-2">
-                  You are about to <strong className={actionType === 'approve' ? 'text-green-600' : 'text-red-600'}>
-                    {actionType}
-                  </strong> the verification for:
+                  На път сте да <strong className={actionType === 'approve' ? 'text-green-600' : 'text-red-600'}>
+                    {actionType === 'approve' ? 'одобрите' : 'отхвърлите'}
+                  </strong> верификацията за:
                 </p>
                 <div className="p-3 bg-gray-50 rounded-md">
                   <p className="text-sm font-medium text-gray-900">{selectedVerification.display_name}</p>
@@ -311,18 +334,18 @@ export default function VerificationReview() {
 
               <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes {actionType === 'reject' && <span className="text-red-500">*</span>}
+                  Бележки {actionType === 'reject' && <span className="text-red-500">*</span>}
                 </label>
                 <textarea
                   id="notes"
                   rows={4}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder={actionType === 'approve' ? 'ID verified successfully' : 'Please provide a reason for rejection (e.g., Document is blurry)'}
+                  placeholder={actionType === 'approve' ? 'Документът е верифициран успешно' : 'Моля, предоставете причина за отхвърлянето (напр., Документът е размазан)'}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                 />
                 {actionType === 'reject' && !notes.trim() && (
-                  <p className="mt-1 text-xs text-red-600">Notes are required for rejection</p>
+                  <p className="mt-1 text-xs text-red-600">Бележките са задължителни при отхвърляне</p>
                 )}
               </div>
             </div>
@@ -334,7 +357,7 @@ export default function VerificationReview() {
                 disabled={processing}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
               >
-                Cancel
+                Отказ
               </button>
               <button
                 onClick={handleSubmitAction}
@@ -345,7 +368,7 @@ export default function VerificationReview() {
                     : 'bg-red-600 hover:bg-red-700'
                 }`}
               >
-                {processing ? 'Processing...' : actionType === 'approve' ? 'Approve' : 'Reject'}
+                {processing ? 'Обработка...' : actionType === 'approve' ? 'Одобри' : 'Отхвърли'}
               </button>
             </div>
           </div>

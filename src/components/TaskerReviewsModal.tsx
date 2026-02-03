@@ -109,7 +109,7 @@ export default function TaskerReviewsModal({
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Reviews</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Отзиви</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
@@ -139,7 +139,7 @@ export default function TaskerReviewsModal({
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-gray-900 text-lg">{taskerName}</h3>
                 {verificationStatus === 'verified' && (
-                  <span className="inline-flex items-center text-blue-600" title="Verified Tasker">
+                  <span className="inline-flex items-center text-blue-600" title="Потвърден изпълнител">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -155,7 +155,7 @@ export default function TaskerReviewsModal({
                     <span className="text-sm font-medium text-gray-700">{averageRating.toFixed(1)}</span>
                   </div>
                   {totalReviews !== undefined && (
-                    <span className="text-sm text-gray-500">({totalReviews} reviews)</span>
+                    <span className="text-sm text-gray-500">({totalReviews} отзива)</span>
                   )}
                 </div>
               )}
@@ -167,7 +167,7 @@ export default function TaskerReviewsModal({
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="text-gray-600">Loading reviews...</div>
+              <div className="text-gray-600">Зареждане на отзиви...</div>
             </div>
           ) : error ? (
             <div className="text-center py-12">
@@ -176,7 +176,7 @@ export default function TaskerReviewsModal({
                 onClick={fetchReviews}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
               >
-                Try Again
+                Опитайте отново
               </button>
             </div>
           ) : reviews.length === 0 ? (
@@ -184,8 +184,8 @@ export default function TaskerReviewsModal({
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No reviews yet</h3>
-              <p className="text-gray-600">This tasker hasn't received any reviews yet.</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Все още няма отзиви</h3>
+              <p className="text-gray-600">Този изпълнител все още не е получил отзиви.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -238,7 +238,7 @@ export default function TaskerReviewsModal({
             onClick={onClose}
             className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
           >
-            Close
+            Затвори
           </button>
         </div>
       </div>

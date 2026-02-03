@@ -92,14 +92,14 @@ export default function EditBookingModal({
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch availability');
+        throw new Error('Неуспешно зареждане на наличността');
       }
 
       const data = await response.json();
       setAvailability(data);
     } catch (err) {
       console.error('Error fetching availability:', err);
-      setError('Failed to load availability. Please try again.');
+      setError('Неуспешно зареждане на наличността. Моля, опитайте отново.');
     } finally {
       setLoadingAvailability(false);
     }
@@ -128,16 +128,16 @@ export default function EditBookingModal({
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleTimeString('en-US', { 
+    return date.toLocaleTimeString('bg-BG', { 
       hour: '2-digit', 
       minute: '2-digit',
-      hour12: true 
+      hour12: false 
     });
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('bg-BG', { 
       weekday: 'long',
       month: 'long', 
       day: 'numeric',
@@ -227,7 +227,7 @@ export default function EditBookingModal({
 
       // Validate dates
       if (new Date(startsAt) >= new Date(endsAt)) {
-        throw new Error('End time must be after start time');
+        throw new Error('Крайното време трябва да е след началното време');
       }
 
       const updateData = {
@@ -247,15 +247,15 @@ export default function EditBookingModal({
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update booking' }));
-        throw new Error(errorData.message || 'Failed to update booking');
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешно актуализиране на резервацията' }));
+        throw new Error(errorData.message || 'Неуспешно актуализиране на резервацията');
       }
 
       onSuccess();
       onClose();
     } catch (err) {
       console.error('Error updating booking:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update booking');
+      setError(err instanceof Error ? err.message : 'Неуспешно актуализиране на резервацията');
     } finally {
       setLoading(false);
     }
@@ -277,8 +277,8 @@ export default function EditBookingModal({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Edit Booking</h2>
-              <p className="text-sm text-gray-600 mt-1">Update your booking details</p>
+              <h2 className="text-2xl font-bold text-gray-900">Редактирай резервация</h2>
+              <p className="text-sm text-gray-600 mt-1">Актуализирайте детайлите на вашата резервация</p>
             </div>
             <button
               onClick={onClose}
@@ -301,7 +301,7 @@ export default function EditBookingModal({
             {/* Address */}
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
-                Address
+                Адрес
               </label>
               <input
                 type="text"
@@ -317,15 +317,15 @@ export default function EditBookingModal({
             {/* Date and Time */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date & Time
+                Дата и час
               </label>
               
               {!showTimeSlots ? (
                 <div className="space-y-3">
                   <div className="bg-gray-50 border border-gray-300 rounded-md p-4">
-                    <div className="text-sm text-gray-600 mb-1">Current booking:</div>
+                    <div className="text-sm text-gray-600 mb-1">Текуща резервация:</div>
                     <div className="font-medium text-gray-900">
-                      {new Date(formData.startsAt).toLocaleString('en-US', {
+                      {new Date(formData.startsAt).toLocaleString('bg-BG', {
                         weekday: 'long',
                         month: 'long',
                         day: 'numeric',
@@ -335,7 +335,7 @@ export default function EditBookingModal({
                       })}
                     </div>
                     <div className="text-sm text-gray-500 mt-1">
-                      Duration: {bookingDurationHours} hour{bookingDurationHours !== 1 ? 's' : ''}
+                      Продължителност: {bookingDurationHours} час{bookingDurationHours !== 1 ? 'а' : ''}
                     </div>
                   </div>
                   <button
@@ -343,7 +343,7 @@ export default function EditBookingModal({
                     onClick={handleShowTimeSlots}
                     className="w-full px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 transition-colors"
                   >
-                    Change Time Slot
+                    Промени часовия слот
                   </button>
                 </div>
               ) : (
@@ -356,12 +356,12 @@ export default function EditBookingModal({
                       disabled={!canGoPrevious()}
                       className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ← Prev
+                      ← Предишна
                     </button>
                     <div className="text-xs font-medium text-gray-900">
                       {startDate && endDate && (
                         <>
-                          {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(startDate).toLocaleDateString('bg-BG', { month: 'short', day: 'numeric' })} - {new Date(endDate).toLocaleDateString('bg-BG', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </>
                       )}
                     </div>
@@ -370,7 +370,7 @@ export default function EditBookingModal({
                       onClick={handleNextWeek}
                       className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
                     >
-                      Next →
+                      Следваща →
                     </button>
                   </div>
 
@@ -378,11 +378,11 @@ export default function EditBookingModal({
                   <div className="p-4 max-h-96 overflow-y-auto">
                     {loadingAvailability ? (
                       <div className="text-center py-8 text-gray-600 text-sm">
-                        Loading availability...
+                        Зареждане на наличността...
                       </div>
                     ) : availability.length === 0 ? (
                       <div className="text-center py-8 text-gray-600 text-sm">
-                        No available slots for this week
+                        Няма налични слотове за тази седмица
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -427,7 +427,7 @@ export default function EditBookingModal({
 
                   {selectedSlot && (
                     <div className="p-3 bg-green-50 border-t border-green-200 text-sm text-green-800">
-                      ✓ Selected: {formatDate(selectedSlot.date)} at {formatTime(selectedSlot.startTime)}
+                      ✓ Избрано: {formatDate(selectedSlot.date)} в {formatTime(selectedSlot.startTime)}
                     </div>
                   )}
                 </div>
@@ -437,18 +437,18 @@ export default function EditBookingModal({
             {/* Price (Read-only) */}
             <div>
               <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                Price
+                Цена
               </label>
               <div className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
                 ${(formData.priceCents / 100).toFixed(2)}
               </div>
-              <p className="text-xs text-gray-500 mt-1">Price cannot be changed</p>
+              <p className="text-xs text-gray-500 mt-1">Цената не може да бъде променена</p>
             </div>
 
             {/* Details */}
             <div>
               <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Details
+                Допълнителни детайли
               </label>
               <textarea
                 id="details"
@@ -468,14 +468,14 @@ export default function EditBookingModal({
                 disabled={loading}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
               >
-                Cancel
+                Отказ
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? 'Запазване...' : 'Запази промените'}
               </button>
             </div>
           </form>

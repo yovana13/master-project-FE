@@ -31,13 +31,13 @@ interface StepThreeProps {
 }
 
 const DAYS_OF_WEEK = [
-  { value: 'monday', label: 'Monday' },
-  { value: 'tuesday', label: 'Tuesday' },
-  { value: 'wednesday', label: 'Wednesday' },
-  { value: 'thursday', label: 'Thursday' },
-  { value: 'friday', label: 'Friday' },
-  { value: 'saturday', label: 'Saturday' },
-  { value: 'sunday', label: 'Sunday' },
+  { value: 'monday', label: 'Понеделник' },
+  { value: 'tuesday', label: 'Вторник' },
+  { value: 'wednesday', label: 'Сряда' },
+  { value: 'thursday', label: 'Четвъртък' },
+  { value: 'friday', label: 'Петък' },
+  { value: 'saturday', label: 'Събота' },
+  { value: 'sunday', label: 'Неделя' },
 ];
 
 export default function StepThree({
@@ -88,7 +88,7 @@ export default function StepThree({
     console.log('User ID:', userId);
     
     if (!userId) {
-      setError('You must be logged in');
+      setError('Трябва да сте влезли в профила си');
       return;
     }
 
@@ -97,14 +97,14 @@ export default function StepThree({
     console.log('Active days:', activeDays);
     
     if (activeDays.length === 0) {
-      setError('Please select at least one day');
+      setError('Моля, изберете поне един ден');
       return;
     }
 
     // Validate times
     for (const day of activeDays) {
       if (day.start_time >= day.end_time) {
-        setError(`Invalid time range for ${day.day_of_week}: start time must be before end time`);
+        setError(`Невалиден времеви интервал за ${day.day_of_week}: началният час трябва да е преди крайния час`);
         console.log(`Validation failed for ${day.day_of_week}: ${day.start_time} >= ${day.end_time}`);
         return;
       }
@@ -137,9 +137,9 @@ export default function StepThree({
         console.log('Response status:', response.status);
 
         if (!response.ok) {
-          const error = await response.json().catch(() => ({ message: 'Failed to save availability' }));
+          const error = await response.json().catch(() => ({ message: 'Неуспешно запазване на достъпността' }));
           console.error('API Error:', error);
-          throw new Error(error.message || 'Failed to save availability');
+          throw new Error(error.message || 'Неуспешно запазване на достъпността');
         }
         
         const data = await response.json();
@@ -150,7 +150,7 @@ export default function StepThree({
       onComplete();
     } catch (err) {
       console.error('Error in handleSubmit:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save availability. Please try again.');
+      setError(err instanceof Error ? err.message : 'Неуспешно запазване на достъпността. Моля, опитайте отново.');
     } finally {
       setIsLoading(false);
     }
@@ -159,8 +159,8 @@ export default function StepThree({
   return (
     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Set Your Working Hours</h3>
-        <p className="text-sm text-gray-600">Select the days you're available and set your working hours</p>
+        <h3 className="text-lg font-medium text-gray-900">Задайте вашите работни часове</h3>
+        <p className="text-sm text-gray-600">Изберете дните, в които сте достъпни, и задайте вашите работни часове</p>
         
         {availability.map((day, index) => {
           const dayLabel = DAYS_OF_WEEK[index].label;
@@ -183,7 +183,7 @@ export default function StepThree({
                 <div className="grid grid-cols-2 gap-4 mt-3">
                   <div>
                     <label htmlFor={`start-${day.day_of_week}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      Start Time
+                      Начален час
                     </label>
                     <select
                       id={`start-${day.day_of_week}`}
@@ -201,7 +201,7 @@ export default function StepThree({
                   
                   <div>
                     <label htmlFor={`end-${day.day_of_week}`} className="block text-sm font-medium text-gray-700 mb-1">
-                      End Time
+                      Краен час
                     </label>
                     <select
                       id={`end-${day.day_of_week}`}
@@ -230,14 +230,14 @@ export default function StepThree({
           disabled={isLoading}
           className="flex-1 py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
-          Back
+          Назад
         </button>
         <button
           type="submit"
           disabled={isLoading}
           className="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Saving...' : 'Complete Profile'}
+          {isLoading ? 'Запазване...' : 'Завърши профила'}
         </button>
       </div>
     </form>

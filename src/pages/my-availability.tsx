@@ -26,13 +26,13 @@ interface DayAvailability {
 }
 
 const DAYS_OF_WEEK = [
-  { value: 'monday', label: 'Monday' },
-  { value: 'tuesday', label: 'Tuesday' },
-  { value: 'wednesday', label: 'Wednesday' },
-  { value: 'thursday', label: 'Thursday' },
-  { value: 'friday', label: 'Friday' },
-  { value: 'saturday', label: 'Saturday' },
-  { value: 'sunday', label: 'Sunday' },
+  { value: 'monday', label: 'Понеделник' },
+  { value: 'tuesday', label: 'Вторник' },
+  { value: 'wednesday', label: 'Сряда' },
+  { value: 'thursday', label: 'Четвъртък' },
+  { value: 'friday', label: 'Петък' },
+  { value: 'saturday', label: 'Събота' },
+  { value: 'sunday', label: 'Неделя' },
 ];
 
 export default function MyAvailability() {
@@ -77,7 +77,7 @@ export default function MyAvailability() {
       const response = await fetch(`http://localhost:3007/users/${userId}/availability`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch availability');
+        throw new Error('Неуспешно зареждане на достъпността');
       }
       
       const data = await response.json();
@@ -104,7 +104,7 @@ export default function MyAvailability() {
       setAvailability(mergedAvailability);
     } catch (err) {
       console.error('Error fetching availability:', err);
-      setError('Failed to load availability');
+      setError('Неуспешно зареждане на достъпността');
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ export default function MyAvailability() {
   };
 
   const handleDeleteDay = async (dayOfWeek: string) => {
-    if (!confirm(`Are you sure you want to remove availability for ${dayOfWeek}?`)) {
+    if (!confirm(`Сигурни ли сте, че искате да премахнете достъпността за ${dayOfWeek}?`)) {
       return;
     }
 
@@ -147,8 +147,8 @@ export default function MyAvailability() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to delete availability' }));
-        throw new Error(errorData.message || 'Failed to delete availability');
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешно изтриване на достъпността' }));
+        throw new Error(errorData.message || 'Неуспешно изтриване на достъпността');
       }
 
       // Update local state
@@ -159,11 +159,11 @@ export default function MyAvailability() {
       );
       setAvailability(updated);
 
-      setSuccessMessage('Availability removed successfully!');
+      setSuccessMessage('Достъпността е премахната успешно!');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error deleting availability:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete availability');
+      setError(err instanceof Error ? err.message : 'Неуспешно изтриване на достъпността');
     }
   };
 
@@ -171,14 +171,14 @@ export default function MyAvailability() {
     e.preventDefault();
     
     if (!userId) {
-      setError('You must be logged in');
+      setError('Трябва да сте влезли в профила си');
       return;
     }
 
     // Validate times
     for (const day of availability) {
       if (day.is_active && day.start_time >= day.end_time) {
-        setError(`Invalid time range for ${day.day_of_week}: start time must be before end time`);
+        setError(`Невалиден времеви интервал за ${day.day_of_week}: началният час трябва да е преди крайния час`);
         return;
       }
     }
@@ -204,17 +204,17 @@ export default function MyAvailability() {
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Failed to save availability' }));
-          throw new Error(errorData.message || 'Failed to save availability');
+          const errorData = await response.json().catch(() => ({ message: 'Неуспешно запазване на достъпността' }));
+          throw new Error(errorData.message || 'Неуспешно запазване на достъпността');
         }
       }
 
-      setSuccessMessage('Availability updated successfully!');
+      setSuccessMessage('Достъпността е актуализирана успешно!');
       setTimeout(() => setSuccessMessage(null), 3000);
       await fetchAvailability();
     } catch (err) {
       console.error('Error saving availability:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save availability');
+      setError(err instanceof Error ? err.message : 'Неуспешно запазване на достъпността');
     } finally {
       setSaving(false);
     }
@@ -223,7 +223,7 @@ export default function MyAvailability() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading availability...</div>
+        <div className="text-gray-600">Зареждане на достъпността...</div>
       </div>
     );
   }
@@ -231,26 +231,9 @@ export default function MyAvailability() {
   return (
     <div>
       <Head>
-        <title>My Availability</title>
-        <meta name="description" content="Manage your availability" />
+        <title>Моята достъпност</title>
+        <meta name="description" content="Управление на вашата достъпност" />
       </Head>
-
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">My Availability</h1>
-          </div>
-        </div>
-      </header>
 
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -276,8 +259,8 @@ export default function MyAvailability() {
           {/* Availability Form */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Set Your Working Hours</h2>
-              <p className="text-sm text-gray-600">Select the days you're available and set your working hours</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Задайте вашите работни часове</h2>
+              <p className="text-sm text-gray-600">Изберете дните, в които сте достъпни, и задайте вашите работни часове</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -303,7 +286,7 @@ export default function MyAvailability() {
                           onClick={() => handleDeleteDay(day.day_of_week)}
                           className="text-red-600 hover:text-red-800 text-sm font-medium"
                         >
-                          Remove
+                          Премахни
                         </button>
                       )}
                     </div>
@@ -312,7 +295,7 @@ export default function MyAvailability() {
                       <div className="grid grid-cols-2 gap-4 mt-3">
                         <div>
                           <label htmlFor={`start-${day.day_of_week}`} className="block text-sm font-medium text-gray-700 mb-1">
-                            Start Time
+                            Начален час
                           </label>
                           <select
                             id={`start-${day.day_of_week}`}
@@ -330,7 +313,7 @@ export default function MyAvailability() {
                         
                         <div>
                           <label htmlFor={`end-${day.day_of_week}`} className="block text-sm font-medium text-gray-700 mb-1">
-                            End Time
+                            Краен час
                           </label>
                           <select
                             id={`end-${day.day_of_week}`}
@@ -363,14 +346,14 @@ export default function MyAvailability() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Saving...
+                      Запазване...
                     </>
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Save Availability
+                      Запази достъпност
                     </>
                   )}
                 </button>

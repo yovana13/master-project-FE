@@ -37,7 +37,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create admin');
+        throw new Error(errorData.message || 'Неуспешно създаване на администратор');
       }
 
       // Reset form
@@ -51,7 +51,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
       onClose();
     } catch (error: any) {
       console.error('Error creating admin:', error);
-      onError(error.message || 'Failed to create admin. Please try again.');
+      onError(error.message || 'Неуспешно създаване на администратор. Моля, опитайте отново.');
     } finally {
       setSubmitting(false);
     }
@@ -64,7 +64,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-xl font-semibold text-gray-900">Create New Admin</h3>
+          <h3 className="text-xl font-semibold text-gray-900">Създай нов администратор</h3>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -80,7 +80,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email *
+              Имейл *
             </label>
             <input
               type="email"
@@ -96,7 +96,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
           {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password *
+              Парола *
             </label>
             <input
               type="password"
@@ -106,14 +106,14 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
               required
               minLength={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Minimum 6 characters"
+              placeholder="Минимум 6 символа"
             />
           </div>
 
           {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name *
+              Пълно име *
             </label>
             <input
               type="text"
@@ -122,14 +122,14 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
               onChange={(e) => setName(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="John Doe"
+              placeholder="Иван Иванов"
             />
           </div>
 
           {/* Phone */}
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-              Phone *
+              Телефон *
             </label>
             <input
               type="tel"
@@ -152,7 +152,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
               className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
             />
             <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
-              Active account
+              Активен акаунт
             </label>
           </div>
 
@@ -164,7 +164,7 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
               disabled={submitting}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50"
             >
-              Cancel
+              Отказ
             </button>
             <button
               type="submit"
@@ -177,10 +177,10 @@ export default function CreateAdminModal({ isOpen, onClose, onSuccess, onError }
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating...
+                  Създаване...
                 </>
               ) : (
-                'Create Admin'
+                'Създай администратор'
               )}
             </button>
           </div>

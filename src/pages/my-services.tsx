@@ -87,14 +87,14 @@ export default function MyServices() {
       const response = await fetch(`http://localhost:3007/taskers/${userId}/services`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch services');
+        throw new Error('Неуспешно зареждане на услугите');
       }
       
       const data = await response.json();
       setTaskerServices(data);
     } catch (err) {
       console.error('Error fetching tasker services:', err);
-      setError('Failed to load your services');
+      setError('Неуспешно зареждане на вашите услуги');
     } finally {
       setLoading(false);
     }
@@ -105,7 +105,7 @@ export default function MyServices() {
       const response = await fetch('http://localhost:3007/services');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch services');
+        throw new Error('Неуспешно зареждане на услугите');
       }
       
       const data = await response.json();
@@ -120,7 +120,7 @@ export default function MyServices() {
       const response = await fetch(`http://localhost:3007/users/${userId}/cities`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch cities');
+        throw new Error('Неуспешно зареждане на градовете');
       }
       
       const data = await response.json();
@@ -146,15 +146,15 @@ export default function MyServices() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update cities' }));
-        throw new Error(errorData.message || 'Failed to update cities');
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешно актуализиране на градовете' }));
+        throw new Error(errorData.message || 'Неуспешно актуализиране на градовете');
       }
 
-      setCitiesSuccessMessage('Cities updated successfully!');
+      setCitiesSuccessMessage('Градовете са актуализирани успешно!');
       setTimeout(() => setCitiesSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error updating cities:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update cities');
+      setError(err instanceof Error ? err.message : 'Неуспешно актуализиране на градовете');
     }
   };
 
@@ -176,9 +176,9 @@ export default function MyServices() {
       // Add pricing based on selected service type
       const selectedService = allServices.find(s => s.id === formData.serviceId);
       if (selectedService?.pricing_model === 'hourly') {
-        payload.price_hourly = parseInt(formData.priceHourly);
+        payload.price_hourly = Math.round(parseFloat(formData.priceHourly) * 100);
       } else if (selectedService?.pricing_model === 'sq_m') {
-        payload.price_per_sq_m = parseInt(formData.pricePerSqM);
+        payload.price_per_sq_m = Math.round(parseFloat(formData.pricePerSqM) * 100);
         payload.time_per_sq_m = parseInt(formData.timePerSqM);
       }
 
@@ -191,11 +191,11 @@ export default function MyServices() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to add service' }));
-        throw new Error(errorData.message || 'Failed to add service');
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешно добавяне на услуга' }));
+        throw new Error(errorData.message || 'Неуспешно добавяне на услуга');
       }
 
-      setSuccessMessage('Service added successfully!');
+      setSuccessMessage('Услугата е добавена успешно!');
       setShowAddModal(false);
       resetForm();
       await fetchTaskerServices();
@@ -203,7 +203,7 @@ export default function MyServices() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error adding service:', err);
-      setError(err instanceof Error ? err.message : 'Failed to add service');
+      setError(err instanceof Error ? err.message : 'Неуспешно добавяне на услуга');
     }
   };
 
@@ -224,9 +224,9 @@ export default function MyServices() {
 
       // Add pricing based on service type
       if (serviceDetails?.pricing_model === 'hourly') {
-        payload.priceHourly = parseInt(formData.priceHourly);
+        payload.priceHourly = Math.round(parseFloat(formData.priceHourly) * 100);
       } else if (serviceDetails?.pricing_model === 'sq_m') {
-        payload.pricePerSqM = parseInt(formData.pricePerSqM);
+        payload.pricePerSqM = Math.round(parseFloat(formData.pricePerSqM) * 100);
         payload.timePerSqM = parseInt(formData.timePerSqM);
       }
 
@@ -241,11 +241,11 @@ export default function MyServices() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update service' }));
-        throw new Error(errorData.message || 'Failed to update service');
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешно актуализиране на услугата' }));
+        throw new Error(errorData.message || 'Неуспешно актуализиране на услугата');
       }
 
-      setSuccessMessage('Service updated successfully!');
+      setSuccessMessage('Услугата е актуализирана успешно!');
       setShowEditModal(false);
       setEditingService(null);
       resetForm();
@@ -254,12 +254,12 @@ export default function MyServices() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error updating service:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update service');
+      setError(err instanceof Error ? err.message : 'Неуспешно актуализиране на услугата');
     }
   };
 
   const handleDeleteService = async (taskerServiceId: string) => {
-    if (!confirm('Are you sure you want to remove this service?')) {
+    if (!confirm('Сигурни ли сте, че искате да премахнете тази услуга?')) {
       return;
     }
 
@@ -272,17 +272,17 @@ export default function MyServices() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to delete service' }));
-        throw new Error(errorData.message || 'Failed to delete service');
+        const errorData = await response.json().catch(() => ({ message: 'Неуспешно изтриване на услугата' }));
+        throw new Error(errorData.message || 'Неуспешно изтриване на услугата');
       }
 
-      setSuccessMessage('Service removed successfully!');
+      setSuccessMessage('Услугата е премахната успешно!');
       await fetchTaskerServices();
       
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error deleting service:', err);
-      setError(err instanceof Error ? err.message : 'Failed to remove service');
+      setError(err instanceof Error ? err.message : 'Неуспешно премахване на услугата');
     }
   };
 
@@ -295,8 +295,8 @@ export default function MyServices() {
     setEditingService(service);
     setFormData({
       serviceId: service.service_id,
-      priceHourly: service.price_hourly?.toString() || '',
-      pricePerSqM: service.price_per_sq_m?.toString() || '',
+      priceHourly: service.price_hourly ? (service.price_hourly / 100).toFixed(2) : '',
+      pricePerSqM: service.price_per_sq_m ? (service.price_per_sq_m / 100).toFixed(2) : '',
       timePerSqM: service.time_per_sq_m?.toString() || '',
       minBookingMinutes: service.min_booking_minutes.toString(),
       notes: service.notes || '',
@@ -334,7 +334,7 @@ export default function MyServices() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading your services...</div>
+        <div className="text-gray-600">Зареждане на вашите услуги...</div>
       </div>
     );
   }
@@ -342,8 +342,8 @@ export default function MyServices() {
   return (
     <div>
       <Head>
-        <title>My Services</title>
-        <meta name="description" content="Manage your services" />
+        <title>Моите услуги</title>
+        <meta name="description" content="Управление на вашите услуги" />
       </Head>
 
       {/* Header */}
@@ -351,15 +351,7 @@ export default function MyServices() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <h1 className="text-2xl font-bold text-gray-900">My Services</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Моите услуги</h1>
             </div>
             <button
               onClick={openAddModal}
@@ -368,7 +360,7 @@ export default function MyServices() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Add Service
+              Добави услуга
             </button>
           </div>
         </div>
@@ -401,13 +393,13 @@ export default function MyServices() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Services Yet</h3>
-              <p className="text-gray-600 mb-6">Add your first service to start accepting bookings</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Няма услуги още</h3>
+              <p className="text-gray-600 mb-6">Добавете вашата първа услуга, за да започнете да приемате резервации</p>
               <button
                 onClick={openAddModal}
                 className="px-6 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
               >
-                Add Your First Service
+                Добавете вашата първа услуга
               </button>
             </div>
           ) : (
@@ -433,16 +425,16 @@ export default function MyServices() {
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {taskerService.is_active ? 'Active' : 'Inactive'}
+                        {taskerService.is_active ? 'Активна' : 'Неактивна'}
                       </span>
                     </div>
 
                     <div className="space-y-2 mb-4">
                       {serviceDetails?.pricing_model === 'hourly' && taskerService.price_hourly && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Hourly Rate:</span>
+                          <span className="text-gray-600">Часова тарифа:</span>
                           <span className="font-medium text-gray-900">
-                            ${(taskerService.price_hourly / 100).toFixed(2)}/hr
+                            {(taskerService.price_hourly / 100).toFixed(2)} евро/час
                           </span>
                         </div>
                       )}
@@ -450,26 +442,26 @@ export default function MyServices() {
                         <>
                           {taskerService.price_per_sq_m && (
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Per Square Meter:</span>
+                              <span className="text-gray-600">На квадратен метър:</span>
                               <span className="font-medium text-gray-900">
-                                ${(taskerService.price_per_sq_m / 100).toFixed(2)}/m²
+                                {(taskerService.price_per_sq_m / 100).toFixed(2)} евро/м²
                               </span>
                             </div>
                           )}
                           {taskerService.time_per_sq_m && (
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Time Per m²:</span>
+                              <span className="text-gray-600">Време на м²:</span>
                               <span className="font-medium text-gray-900">
-                                {taskerService.time_per_sq_m} min
+                                {taskerService.time_per_sq_m} мин
                               </span>
                             </div>
                           )}
                         </>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Min. Booking:</span>
+                        <span className="text-gray-600">Мин. резервация:</span>
                         <span className="font-medium text-gray-900">
-                          {taskerService.min_booking_minutes} min
+                          {taskerService.min_booking_minutes} мин
                         </span>
                       </div>
                     </div>
@@ -485,13 +477,13 @@ export default function MyServices() {
                         onClick={() => openEditModal(taskerService)}
                         className="flex-1 px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-md hover:bg-indigo-100 transition-colors"
                       >
-                        Edit
+                        Редактирай
                       </button>
                       <button
                         onClick={() => handleDeleteService(taskerService.service_id)}
                         className="flex-1 px-4 py-2 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors"
                       >
-                        Remove
+                        Премахни
                       </button>
                     </div>
                   </div>
@@ -504,8 +496,8 @@ export default function MyServices() {
           <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Service Areas</h2>
-                <p className="text-sm text-gray-600">Manage the cities where you offer your services</p>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">Зони на обслужване</h2>
+                <p className="text-sm text-gray-600">Управление на градовете, в които предлагате вашите услуги</p>
               </div>
             </div>
 
@@ -524,8 +516,8 @@ export default function MyServices() {
             <CitiesSelector
               selectedCities={taskerCities}
               onCitiesChange={setTaskerCities}
-              label="Select Cities"
-              description="Manage the cities where you offer your services"
+              label="Изберете градове"
+              description="Управление на градовете, в които предлагате вашите услуги"
               showSelectedCities={true}
             />
 
@@ -538,7 +530,7 @@ export default function MyServices() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Save Cities
+                Запази градовете
               </button>
             </div>
           </div>
@@ -550,7 +542,7 @@ export default function MyServices() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Add Service</h2>
+              <h2 className="text-xl font-bold text-gray-900">Добави услуга</h2>
               <button
                 onClick={closeModals}
                 className="text-gray-400 hover:text-gray-600"
@@ -564,7 +556,7 @@ export default function MyServices() {
             <form onSubmit={handleAddService} className="space-y-4">
               <div>
                 <label htmlFor="serviceId" className="block text-sm font-medium text-gray-700 mb-1">
-                  Service *
+                  Услуга *
                 </label>
                 <select
                   id="serviceId"
@@ -573,10 +565,10 @@ export default function MyServices() {
                   onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">Select a service</option>
+                  <option value="">Изберете услуга</option>
                   {getAvailableServices().map((service) => (
                     <option key={service.id} value={service.id}>
-                      {service.name} ({service.pricing_model === 'hourly' ? 'Hourly' : 'Per m²'})
+                      {service.name} ({service.pricing_model === 'hourly' ? 'По час' : 'На м²'})
                     </option>
                   ))}
                 </select>
@@ -585,17 +577,18 @@ export default function MyServices() {
               {selectedService?.pricing_model === 'hourly' && (
                 <div>
                   <label htmlFor="priceHourly" className="block text-sm font-medium text-gray-700 mb-1">
-                    Hourly Rate (cents) *
+                    Часова тарифа (евро) *
                   </label>
                   <input
                     id="priceHourly"
                     type="number"
                     required
                     min="0"
+                    step="0.01"
                     value={formData.priceHourly}
                     onChange={(e) => setFormData({ ...formData, priceHourly: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="5000 (= $50.00)"
+                    placeholder="50.00"
                   />
                 </div>
               )}
@@ -604,22 +597,23 @@ export default function MyServices() {
                 <>
                   <div>
                     <label htmlFor="pricePerSqM" className="block text-sm font-medium text-gray-700 mb-1">
-                      Price Per m² (cents) *
+                      Цена на м² (евро) *
                     </label>
                     <input
                       id="pricePerSqM"
                       type="number"
                       required
                       min="0"
+                      step="0.01"
                       value={formData.pricePerSqM}
                       onChange={(e) => setFormData({ ...formData, pricePerSqM: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="300 (= $3.00)"
+                      placeholder="3.00"
                     />
                   </div>
                   <div>
                     <label htmlFor="timePerSqM" className="block text-sm font-medium text-gray-700 mb-1">
-                      Time Per m² (minutes) *
+                      Време на м² (минути) *
                     </label>
                     <input
                       id="timePerSqM"
@@ -637,7 +631,7 @@ export default function MyServices() {
 
               <div>
                 <label htmlFor="minBookingMinutes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Minimum Booking (minutes) *
+                  Минимална резервация (минути) *
                 </label>
                 <input
                   id="minBookingMinutes"
@@ -653,7 +647,7 @@ export default function MyServices() {
 
               <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
+                  Бележки
                 </label>
                 <textarea
                   id="notes"
@@ -661,7 +655,7 @@ export default function MyServices() {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Additional information about this service..."
+                  placeholder="Допълнителна информация за тази услуга..."
                 />
               </div>
 
@@ -671,13 +665,13 @@ export default function MyServices() {
                   onClick={closeModals}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                 >
-                  Cancel
+                  Отказ
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                 >
-                  Add Service
+                  Добави услуга
                 </button>
               </div>
             </form>
@@ -690,7 +684,7 @@ export default function MyServices() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Edit Service</h2>
+              <h2 className="text-xl font-bold text-gray-900">Редактирай услуга</h2>
               <button
                 onClick={closeModals}
                 className="text-gray-400 hover:text-gray-600"
@@ -710,17 +704,18 @@ export default function MyServices() {
               {editServiceDetails?.pricing_model === 'hourly' && (
                 <div>
                   <label htmlFor="editPriceHourly" className="block text-sm font-medium text-gray-700 mb-1">
-                    Hourly Rate (cents) *
+                    Часова тарифа (евро) *
                   </label>
                   <input
                     id="editPriceHourly"
                     type="number"
                     required
                     min="0"
+                    step="0.01"
                     value={formData.priceHourly}
                     onChange={(e) => setFormData({ ...formData, priceHourly: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="5000 (= $50.00)"
+                    placeholder="50.00"
                   />
                 </div>
               )}
@@ -729,22 +724,23 @@ export default function MyServices() {
                 <>
                   <div>
                     <label htmlFor="editPricePerSqM" className="block text-sm font-medium text-gray-700 mb-1">
-                      Price Per m² (cents) *
+                      Цена на м² (евро) *
                     </label>
                     <input
                       id="editPricePerSqM"
                       type="number"
                       required
                       min="0"
+                      step="0.01"
                       value={formData.pricePerSqM}
                       onChange={(e) => setFormData({ ...formData, pricePerSqM: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="300 (= $3.00)"
+                      placeholder="3.00"
                     />
                   </div>
                   <div>
                     <label htmlFor="editTimePerSqM" className="block text-sm font-medium text-gray-700 mb-1">
-                      Time Per m² (minutes) *
+                      Време на м² (минути) *
                     </label>
                     <input
                       id="editTimePerSqM"
@@ -762,7 +758,7 @@ export default function MyServices() {
 
               <div>
                 <label htmlFor="editMinBookingMinutes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Minimum Booking (minutes) *
+                  Минимална резервация (минути) *
                 </label>
                 <input
                   id="editMinBookingMinutes"
@@ -778,7 +774,7 @@ export default function MyServices() {
 
               <div>
                 <label htmlFor="editNotes" className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
+                  Бележки
                 </label>
                 <textarea
                   id="editNotes"
@@ -786,7 +782,7 @@ export default function MyServices() {
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Additional information about this service..."
+                  placeholder="Допълнителна информация за тази услуга..."
                 />
               </div>
 
@@ -796,13 +792,13 @@ export default function MyServices() {
                   onClick={closeModals}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                 >
-                  Cancel
+                  Отказ
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                 >
-                  Update Service
+                  Актуализирай услуга
                 </button>
               </div>
             </form>

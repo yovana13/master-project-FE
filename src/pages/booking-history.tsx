@@ -99,7 +99,7 @@ export default function BookingHistory() {
       const response = await fetch(endpoint);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch booking history');
+        throw new Error('Неуспешно зареждане на историята на резервациите');
       }
       
       const data = await response.json();
@@ -135,13 +135,13 @@ export default function BookingHistory() {
       }
     } catch (error) {
       console.error('Failed to fetch review:', error);
-      setInfoMessage({ text: 'Failed to load review. Please try again.', type: 'error' });
+      setInfoMessage({ text: 'Неуспешно зареждане на отзива. Моля, опитайте отново.', type: 'error' });
     }
   };
 
   const handleReviewSuccess = async () => {
     await fetchBookingHistory();
-    setInfoMessage({ text: 'Review submitted successfully!', type: 'success' });
+    setInfoMessage({ text: 'Отзивът е изпратен успешно!', type: 'success' });
   };
 
   const handleReviewError = (message: string) => {
@@ -154,7 +154,7 @@ export default function BookingHistory() {
   };
 
   const handleReportSuccess = () => {
-    setInfoMessage({ text: 'Report submitted successfully. Thank you for helping keep our community safe.', type: 'success' });
+    setInfoMessage({ text: 'Докладът е изпратен успешно. Благодарим ви, че помагате за безопасността на общността.', type: 'success' });
     setShowReportUserModal(false);
     setReportedUser(null);
   };
@@ -176,10 +176,10 @@ export default function BookingHistory() {
     }[status] || 'bg-gray-100 text-gray-800';
 
     const label = {
-      completed: 'Completed',
-      declined: 'Declined',
-      cancelled: 'Cancelled',
-      no_show: 'No Show',
+      completed: 'Завършена',
+      declined: 'Отказана',
+      cancelled: 'Отменена',
+      no_show: 'Неявяване',
     }[status] || status;
 
     return (
@@ -200,7 +200,7 @@ export default function BookingHistory() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-600">Loading booking history...</div>
+        <div className="text-gray-600">Зареждане на историята на резервациите...</div>
       </div>
     );
   }
@@ -208,27 +208,27 @@ export default function BookingHistory() {
   return (
     <div>
       <Head>
-        <title>Booking History - Master Project</title>
-        <meta name="description" content="View your booking history" />
+        <title>История на резервациите - Master Project</title>
+        <meta name="description" content="Преглед на вашата история на резервации" />
       </Head>
 
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Booking History</h1>
-            <p className="text-gray-600">View all your completed, declined, cancelled, and no-show bookings</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">История на резервациите</h1>
+            <p className="text-gray-600">Преглед на всички завършени, отказани, отменени и неявявания резервации</p>
           </div>
 
           {/* Filter Tabs */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-2">
             <div className="flex flex-wrap gap-2">
               {[
-                { key: 'all', label: 'All' },
-                { key: 'completed', label: 'Completed' },
-                { key: 'declined', label: 'Declined' },
-                { key: 'cancelled', label: 'Cancelled' },
-                { key: 'no_show', label: 'No Show' },
+                { key: 'all', label: 'Всички' },
+                { key: 'completed', label: 'Завършени' },
+                { key: 'declined', label: 'Отказани' },
+                { key: 'cancelled', label: 'Отменени' },
+                { key: 'no_show', label: 'Неявявания' },
               ].map(({ key, label }) => (
                 <button
                   key={key}
@@ -254,11 +254,11 @@ export default function BookingHistory() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Няма намерени резервации</h3>
               <p className="text-gray-600">
                 {statusFilter === 'all' 
-                  ? 'You don\'t have any booking history yet.' 
-                  : `You don't have any ${statusFilter} bookings.`}
+                  ? 'Още нямате история на резервации.' 
+                  : `Нямате ${statusFilter === 'completed' ? 'завършени' : statusFilter === 'declined' ? 'отказани' : statusFilter === 'cancelled' ? 'отменени' : 'неявявания'} резервации.`}
               </p>
             </div>
           ) : (
@@ -299,7 +299,7 @@ export default function BookingHistory() {
                         </svg>
                         <span className="text-sm text-gray-600">{booking.tasker.display_name}</span>
                         {booking.tasker.verification_status === 'verified' && (
-                          <span className="inline-flex items-center text-blue-600" title="Verified Tasker">
+                          <span className="inline-flex items-center text-blue-600" title="Потвърден изпълнител">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
@@ -326,15 +326,16 @@ export default function BookingHistory() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span className="text-sm text-gray-600">
-                        {new Date(booking.startsAt).toLocaleDateString('en-US', {
+                        {new Date(booking.startsAt).toLocaleDateString('bg-BG', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
                         })}
-                        {' at '}
-                        {new Date(booking.startsAt).toLocaleTimeString('en-US', {
+                        {' в '}
+                        {new Date(booking.startsAt).toLocaleTimeString('bg-BG', {
                           hour: '2-digit',
                           minute: '2-digit',
+                          hour12: false,
                         })}
                       </span>
                     </div>
@@ -344,7 +345,7 @@ export default function BookingHistory() {
                   {booking.details && (
                     <div className="pt-4 border-t border-gray-200">
                       <p className="text-sm text-gray-600 line-clamp-2">
-                        <span className="font-medium text-gray-700">Details: </span>
+                        <span className="font-medium text-gray-700">Детайли: </span>
                         {booking.details}
                       </p>
                     </div>
@@ -359,14 +360,14 @@ export default function BookingHistory() {
                           onClick={() => handleViewReview(booking)}
                           className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
                         >
-                          View Your Review
+                          Преглед на вашия отзив
                         </button>
                       ) : (
                         <button
                           onClick={() => handleLeaveReview(booking)}
                           className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
                         >
-                          Leave a Review
+                          Оставете отзив
                         </button>
                       )}
                       
@@ -379,7 +380,7 @@ export default function BookingHistory() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
-                          Report Tasker
+                          Докладвай изпълнител
                         </button>
                       )}
                       {userRole === Role.tasker && booking.user && (
@@ -390,7 +391,7 @@ export default function BookingHistory() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
-                          Report Client
+                          Докладвай клиент
                         </button>
                       )}
                     </div>

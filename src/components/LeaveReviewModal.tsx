@@ -63,7 +63,7 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
       onSuccess();
     } catch (error) {
       console.error('Error submitting review:', error);
-      onError('Failed to submit review. Please try again.');
+      onError('Неуспешно изпращане на отзив. Моля, опитайте отново.');
     } finally {
       setSubmitting(false);
     }
@@ -79,7 +79,7 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-md w-full p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Leave a Review</h2>
+          <h2 className="text-xl font-bold text-gray-900">Оставете отзив</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600"
@@ -91,17 +91,14 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
         </div>
 
         <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Review for:</p>
-          <p className="font-medium text-gray-900">
-            {booking.user?.name || booking.tasker?.display_name || 'N/A'}
-          </p>
-          <p className="text-sm text-gray-600">{booking.service.name}</p>
+          <p className="text-sm text-gray-600 mb-1">Отзив за: {booking.user?.name || booking.tasker?.display_name || 'Няма'}</p>
+          <p className="text-sm text-gray-600">Услуга: {booking.service.name}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rating *
+              Оценка *
             </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -133,7 +130,7 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
 
           <div>
             <label htmlFor="comment" className="block text-sm font-medium text-gray-700 mb-1">
-              Comment
+              Коментар
             </label>
             <textarea
               id="comment"
@@ -141,7 +138,7 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Share your experience with this client..."
+              placeholder="Споделете вашия опит..."
             />
           </div>
 
@@ -152,14 +149,14 @@ export default function LeaveReviewModal({ isOpen, booking, userId, onClose, onS
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
               disabled={submitting}
             >
-              Cancel
+              Отказ
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-400"
               disabled={rating === 0 || submitting}
             >
-              {submitting ? 'Submitting...' : 'Submit Review'}
+              {submitting ? 'Изпращане...' : 'Изпрати отзив'}
             </button>
           </div>
         </form>

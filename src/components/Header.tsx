@@ -64,7 +64,7 @@ export default function Header() {
   }, [showHelpDropdown]);
 
   const handleReportSuccess = () => {
-    setReportMessage({ text: 'Report submitted successfully!', type: 'success' });
+    setReportMessage({ text: 'Докладът е изпратен успешно!', type: 'success' });
     setTimeout(() => setReportMessage(null), 5000);
   };
 
@@ -87,43 +87,6 @@ export default function Header() {
 
           {/* Navigation */}
           <nav className="flex items-center gap-6">
-            {/* Help Dropdown - Available for everyone except admins */}
-            {(!userId || userRole !== Role.admin) && (
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setShowHelpDropdown(!showHelpDropdown)}
-                  className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Help
-                  <svg className={`w-4 h-4 transition-transform ${showHelpDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {/* Dropdown Menu */}
-                {showHelpDropdown && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
-                    <button
-                      onClick={() => {
-                        setShowReportBugModal(true);
-                        setShowHelpDropdown(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
-                    >
-                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Report a Bug
-                    </button>
-                    {/* Report User - Only for logged-in users */}
-                  </div>
-                )}
-              </div>
-            )}
-
             {!userId ? (
               <button
                 onClick={() => router.push('/login')}
@@ -132,7 +95,7 @@ export default function Header() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                Login
+                Влизане
               </button>
             ) : (
               <>
@@ -145,7 +108,7 @@ export default function Header() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      My Services
+                      Моите услуги
                     </button>
                     <button
                       onClick={() => router.push('/my-availability')}
@@ -154,7 +117,7 @@ export default function Header() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      My Availability
+                      Моята наличност
                     </button>
                     <button
                       onClick={() => router.push('/booking-history')}
@@ -163,7 +126,7 @@ export default function Header() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Booking History
+                      История на резервациите
                     </button>
                   </>
                 )}
@@ -178,7 +141,7 @@ export default function Header() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Bug Reports
+                      Доклади за грешки
                     </button>
                     <button
                       onClick={() => router.push('/user-reports')}
@@ -187,7 +150,7 @@ export default function Header() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                       </svg>
-                      User Reports
+                      Доклади за потребители
                     </button>
                     <button
                       onClick={() => router.push('/verification-review')}
@@ -196,7 +159,7 @@ export default function Header() {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Verification Review
+                      Преглед на верификациите
                     </button>
                   </>
                 )}
@@ -210,7 +173,7 @@ export default function Header() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
-                    My Bookings
+                    Моите резервации
                   </button>
                 )}
 
@@ -223,10 +186,47 @@ export default function Header() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Booking History
+                    История на резервациите
                   </button>
                 )}
                 
+                {/* Help Dropdown - Available for everyone except admins */}
+                {userRole !== Role.admin && (
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setShowHelpDropdown(!showHelpDropdown)}
+                      className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Помощ
+                      <svg className={`w-4 h-4 transition-transform ${showHelpDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {showHelpDropdown && (
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                        <button
+                          onClick={() => {
+                            setShowReportBugModal(true);
+                            setShowHelpDropdown(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3"
+                        >
+                          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Докладвай грешка
+                        </button>
+                        {/* Report User - Only for logged-in users */}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <button
                   onClick={() => router.push('/my-account')}
                   className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
@@ -234,7 +234,7 @@ export default function Header() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  My Account
+                  Моят профил
                 </button>
                 
                 <button
@@ -250,7 +250,7 @@ export default function Header() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  Logout
+                  Изход
                 </button>
               </>
             )}

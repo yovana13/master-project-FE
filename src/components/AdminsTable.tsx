@@ -36,7 +36,7 @@ export default function AdminsTable() {
       setAdmins(data);
     } catch (err) {
       console.error('Error fetching admins:', err);
-      setError('Failed to load admins. Please try again.');
+      setError('Неуспешно зареждане на администратори. Моля, опитайте отново.');
     } finally {
       setLoading(false);
     }
@@ -44,7 +44,7 @@ export default function AdminsTable() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('bg-BG', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -52,7 +52,7 @@ export default function AdminsTable() {
   };
 
   const handleCreateSuccess = () => {
-    setSuccessMessage('Admin created successfully!');
+    setSuccessMessage('Администраторът е създаден успешно!');
     setTimeout(() => setSuccessMessage(null), 5000);
     fetchAdmins();
   };
@@ -65,7 +65,7 @@ export default function AdminsTable() {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <div className="text-gray-600">Loading administrators...</div>
+        <div className="text-gray-600">Зареждане на администратори...</div>
       </div>
     );
   }
@@ -89,9 +89,9 @@ export default function AdminsTable() {
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Administrators</h2>
+            <h2 className="text-xl font-bold text-gray-900">Администратори</h2>
             <p className="text-sm text-gray-600 mt-1">
-              Total: {admins.length} {admins.length === 1 ? 'admin' : 'admins'}
+              Общо: {admins.length} {admins.length === 1 ? 'администратор' : 'администратори'}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -102,7 +102,7 @@ export default function AdminsTable() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Create New Admin
+              Създай нов администратор
             </button>
             <button
               onClick={fetchAdmins}
@@ -111,7 +111,7 @@ export default function AdminsTable() {
               <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Refresh
+              Обнови списъка
             </button>
           </div>
         </div>
@@ -122,8 +122,8 @@ export default function AdminsTable() {
           <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No administrators found</h3>
-          <p className="text-gray-600">There are no administrators in the system.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Няма намерени администратори</h3>
+          <p className="text-gray-600">Няма администратори в системата.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -131,19 +131,19 @@ export default function AdminsTable() {
             <thead className="bg-gray-50">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                  Име
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
+                  Имейл
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
+                  Телефон
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Статус
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Joined
+                  Присъединен
                 </th>
               </tr>
             </thead>
@@ -159,7 +159,7 @@ export default function AdminsTable() {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">{admin.name}</div>
-                        <div className="text-sm text-gray-500">ID: {admin.id.substring(0, 8)}...</div>
+                        <div className="text-sm text-gray-500">ID: {admin.id}</div>
                       </div>
                     </div>
                   </td>
@@ -175,7 +175,7 @@ export default function AdminsTable() {
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {admin.is_active ? 'Active' : 'Inactive'}
+                      {admin.is_active ? 'Активен' : 'Неактивен'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

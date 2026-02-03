@@ -26,7 +26,7 @@ export default function SelectRole() {
       const response = await fetch(`http://localhost:3007/users/${userId}/roles`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch user roles');
+        throw new Error('Неуспешно зареждане на потребителски роли');
       }
 
       const data = await response.json();
@@ -37,11 +37,11 @@ export default function SelectRole() {
       if (roles.length === 1) {
         handleRoleSelect(roles[0]);
       } else if (roles.length === 0) {
-        setError('No roles found. Please contact support.');
+        setError('Няма намерени роли. Моля, свържете се с поддръжката.');
       }
     } catch (err) {
       console.error('Error fetching user roles:', err);
-      setError('Failed to load roles. Please try again.');
+      setError('Неуспешно зареждане на роли. Моля, опитайте отново.');
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export default function SelectRole() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading your profiles...</div>
+        <div className="text-gray-600">Зареждане на вашите профили...</div>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export default function SelectRole() {
             onClick={() => router.push('/login')}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
-            Back to Login
+            Назад към вход
           </button>
         </div>
       </div>
@@ -97,17 +97,17 @@ export default function SelectRole() {
   return (
     <div>
       <Head>
-        <title>Select Your Profile</title>
+        <title>Изберете вашия профил</title>
       </Head>
 
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back!
+              Добре дошли отново!
             </h2>
             <p className="text-gray-600">
-              You have multiple profiles. Please select how you'd like to continue.
+              Имате няколко профила. Моля, изберете как бихте искали да продължите.
             </p>
           </div>
 
@@ -127,10 +127,10 @@ export default function SelectRole() {
                   </div>
                   <div className="flex-1 text-left">
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                      Continue as Client
+                      Продължете като клиент
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Book services and manage your bookings
+                      Резервирайте услуги и управлявайте вашите резервации
                     </p>
                   </div>
                   <div className="flex-shrink-0">
@@ -157,10 +157,10 @@ export default function SelectRole() {
                   </div>
                   <div className="flex-1 text-left">
                     <h3 className="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
-                      Continue as Tasker
+                      Продължете като изпълнител
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Manage your services and view task requests
+                      Управлявайте вашите услуги и преглеждайте заявки за задачи
                     </p>
                   </div>
                   <div className="flex-shrink-0">
@@ -175,7 +175,7 @@ export default function SelectRole() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              You can switch between profiles anytime from your account settings
+              Можете да превключвате между профили по всяко време от настройките на вашия профил
             </p>
           </div>
         </div>

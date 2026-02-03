@@ -66,14 +66,14 @@ export default function UserReports() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch user reports');
+        throw new Error('Неуспешно зареждане на доклади за потребители');
       }
 
       const data = await response.json();
       setReports(data);
     } catch (err) {
       console.error('Error fetching user reports:', err);
-      setError('Failed to load user reports. Please try again.');
+      setError('Неуспешно зареждане на доклади за потребители. Моля, опитайте отново.');
     } finally {
       setLoading(false);
     }
@@ -86,11 +86,11 @@ export default function UserReports() {
     
     // Set default messages
     if (action === 'warning') {
-      setActionMessage('Your behavior has been reported and reviewed. Please adhere to our community guidelines.');
+      setActionMessage('Вашето поведение е било докладвано и прегледано. Моля, спазвайте нашите правила на общността.');
     } else if (action === 'suspend_3_days') {
-      setActionMessage('Your account has been temporarily deactivated for 3 days due to policy violations.');
+      setActionMessage('Вашият акаунт е временно деактивиран за 3 дни поради нарушения на политиката.');
     } else if (action === 'permanent_ban') {
-      setActionMessage('Your account has been permanently banned due to severe violation of terms.');
+      setActionMessage('Вашият акаунт е трайно баннат поради сериозно нарушение на условията.');
     }
   };
 
@@ -114,13 +114,13 @@ export default function UserReports() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to execute action');
+        throw new Error('Неуспешно изпълнение на действието');
       }
 
       // Update report status to 'reviewed' after action is taken
       await updateReportStatus(selectedReport.id, 'reviewed');
 
-      setSuccessMessage(`Action executed successfully!`);
+      setSuccessMessage(`Действието е изпълнено успешно!`);
       setTimeout(() => setSuccessMessage(null), 3000);
       
       setShowActionModal(false);
@@ -132,7 +132,7 @@ export default function UserReports() {
       fetchUserReports();
     } catch (err) {
       console.error('Error executing action:', err);
-      setError('Failed to execute action. Please try again.');
+      setError('Неуспешно изпълнение на действието. Моля, опитайте отново.');
       setTimeout(() => setError(null), 5000);
     } finally {
       setProcessingAction(false);
@@ -153,45 +153,46 @@ export default function UserReports() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update status');
+        throw new Error('Неуспешна актуализация на статуса');
       }
 
-      setSuccessMessage('Report status updated successfully!');
+      setSuccessMessage('Статусът на доклада е актуализиран успешно!');
       setTimeout(() => setSuccessMessage(null), 3000);
       
       fetchUserReports();
     } catch (err) {
       console.error('Error updating status:', err);
-      setError('Failed to update status. Please try again.');
+      setError('Неуспешна актуализация на статуса. Моля, опитайте отново.');
       setTimeout(() => setError(null), 5000);
     }
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return 'Няма данни';
     try {
       const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid date';
-      return date.toLocaleDateString('en-US', {
+      if (isNaN(date.getTime())) return 'Невалидна дата';
+      return date.toLocaleDateString('bg-BG', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        hour12: false,
       });
     } catch (error) {
-      return 'Invalid date';
+      return 'Невалидна дата';
     }
   };
 
   const getReasonLabel = (reason: string) => {
     const labels = {
-      harassment: 'Harassment',
-      scam: 'Scam',
-      inappropriate_behavior: 'Inappropriate Behavior',
-      no_show: 'No Show',
-      poor_service: 'Poor Service',
-      other: 'Other',
+      harassment: 'Тормоз',
+      scam: 'Измама',
+      inappropriate_behavior: 'Неподходящо поведение',
+      no_show: 'Неявяване',
+      poor_service: 'Лоша услуга',
+      other: 'Друго',
     };
     return labels[reason as keyof typeof labels] || reason;
   };
@@ -203,8 +204,8 @@ export default function UserReports() {
     };
 
     const label = {
-      pending: 'Pending',
-      reviewed: 'Reviewed',
+      pending: 'Чакащ',
+      reviewed: 'Прегледан',
     };
 
     return (
@@ -227,7 +228,7 @@ export default function UserReports() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-gray-600">Loading user reports...</div>
+        <div className="text-gray-600">Зареждане на доклади за потребители...</div>
       </div>
     );
   }
@@ -239,8 +240,8 @@ export default function UserReports() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">User Reports</h1>
-              <p className="text-gray-600 mt-2">Review and manage user reports</p>
+              <h1 className="text-3xl font-bold text-gray-900">Доклади за потребители</h1>
+              <p className="text-gray-600 mt-2">Преглеждайте и управлявайте доклади за потребители</p>
             </div>
             <button
               onClick={fetchUserReports}
@@ -249,7 +250,7 @@ export default function UserReports() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Refresh
+              Обнови
             </button>
           </div>
         </div>
@@ -277,7 +278,7 @@ export default function UserReports() {
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            All ({statusCounts.all})
+            Всички ({statusCounts.all})
           </button>
           <button
             onClick={() => setStatusFilter('pending')}
@@ -287,7 +288,7 @@ export default function UserReports() {
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            Pending ({statusCounts.pending})
+            Чакащи ({statusCounts.pending})
           </button>
           <button
             onClick={() => setStatusFilter('reviewed')}
@@ -297,7 +298,7 @@ export default function UserReports() {
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
-            Reviewed ({statusCounts.reviewed})
+            Прегледани ({statusCounts.reviewed})
           </button>
         </div>
 
@@ -309,12 +310,12 @@ export default function UserReports() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {statusFilter === 'all' ? 'No reports yet' : `No ${statusFilter.replace('_', ' ')} reports`}
+                {statusFilter === 'all' ? 'Още няма доклади' : `Няма ${statusFilter === 'pending' ? 'чакащи' : 'прегледани'} доклади`}
               </h3>
               <p className="text-gray-600">
                 {statusFilter === 'all' 
-                  ? 'User reports will appear here when submitted.'
-                  : 'Try selecting a different filter to see other reports.'}
+                  ? 'Докладите за потребители ще се появят тук, когато бъдат изпратени.'
+                  : 'Опитайте да изберете друг филтър, за да видите други доклади.'}
               </p>
             </div>
           ) : (
@@ -323,25 +324,25 @@ export default function UserReports() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reporter
+                      Докладчик
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reported User
+                      Докладван потребител
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reason
+                      Причина
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
+                      Описание
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      Статус
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reported
+                      Докладван
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      Действия
                     </th>
                   </tr>
                 </thead>
@@ -351,7 +352,7 @@ export default function UserReports() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">
-                            {report.reporter?.display_name || 'Unknown'}
+                            {report.reporter?.display_name || 'Неизвестен'}
                           </div>
                           <div className="text-gray-500">{report.reporter?.email}</div>
                         </div>
@@ -359,12 +360,12 @@ export default function UserReports() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">
-                            {report.reportedUser?.display_name || 'Unknown'}
+                            {report.reportedUser?.display_name || 'Неизвестен'}
                           </div>
                           <div className="text-gray-500">{report.reportedUser?.email}</div>
                           {report.reportedUser?.is_active === false && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1">
-                              Inactive
+                              Неактивен
                             </span>
                           )}
                         </div>
@@ -381,7 +382,7 @@ export default function UserReports() {
                             onClick={() => setSelectedReport(report)}
                             className="text-indigo-600 hover:text-indigo-800 text-xs mt-1"
                           >
-                            View Full
+                            Виж пълен текст
                           </button>
                         </div>
                       </td>
@@ -398,24 +399,24 @@ export default function UserReports() {
                               onClick={() => handleAction(report, 'warning')}
                               className="text-yellow-600 hover:text-yellow-800 font-medium text-left"
                             >
-                              Send Warning
+                              Изпрати предупреждение
                             </button>
                             <button
                               onClick={() => handleAction(report, 'suspend_3_days')}
                               className="text-orange-600 hover:text-orange-800 font-medium text-left"
                             >
-                              Deactivate 3d
+                              Деактивирай за 3 дни
                             </button>
                             <button
                               onClick={() => handleAction(report, 'permanent_ban')}
                               className="text-red-600 hover:text-red-800 font-medium text-left"
                             >
-                              Permanent Ban
+                              Трайна бан
                             </button>
                           </div>
                         )}
                         {report.status === 'reviewed' && (
-                          <span className="text-gray-500">Completed</span>
+                          <span className="text-gray-500">Завършен</span>
                         )}
                       </td>
                     </tr>
@@ -430,10 +431,10 @@ export default function UserReports() {
         {filteredReports.length > 0 && (
           <div className="mt-4 text-sm text-gray-600">
             {statusFilter === 'all' 
-              ? `Showing all ${reports.length} reports`
-              : `Showing ${filteredReports.length} of ${reports.length} reports`}
+              ? `Показани всички ${reports.length} доклада`
+              : `Показани ${filteredReports.length} от ${reports.length} доклада`}
             {' • '}
-            Pending: {statusCounts.pending}, Reviewed: {statusCounts.reviewed}
+            Чакащи: {statusCounts.pending}, Прегледани: {statusCounts.reviewed}
           </div>
         )}
       </div>
@@ -444,7 +445,7 @@ export default function UserReports() {
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Report Details</h3>
+                <h3 className="text-xl font-bold text-gray-900">Детайли на доклада</h3>
                 <button
                   onClick={() => setSelectedReport(null)}
                   className="text-gray-400 hover:text-gray-600"
@@ -457,44 +458,44 @@ export default function UserReports() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Reporter</label>
-                  <p className="text-gray-900">{selectedReport.reporter?.display_name || 'Unknown'}</p>
+                  <label className="text-sm font-medium text-gray-600">Докладчик</label>
+                  <p className="text-gray-900">{selectedReport.reporter?.display_name || 'Неизвестен'}</p>
                   <p className="text-sm text-gray-500">{selectedReport.reporter?.email}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Reported User</label>
-                  <p className="text-gray-900">{selectedReport.reportedUser?.display_name || 'Unknown'}</p>
+                  <label className="text-sm font-medium text-gray-600">Докладван потребител</label>
+                  <p className="text-gray-900">{selectedReport.reportedUser?.display_name || 'Неизвестен'}</p>
                   <p className="text-sm text-gray-500">{selectedReport.reportedUser?.email}</p>
                   {selectedReport.reportedUser?.is_active === false && (
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mt-1">
-                      Account Inactive
+                      Акаунтът е неактивен
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Reason</label>
+                  <label className="text-sm font-medium text-gray-600">Причина</label>
                   <p className="text-gray-900">{getReasonLabel(selectedReport.reason)}</p>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Status</label>
+                  <label className="text-sm font-medium text-gray-600">Статус</label>
                   <div className="mt-1">{getStatusBadge(selectedReport.status)}</div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Description</label>
+                  <label className="text-sm font-medium text-gray-600">Описание</label>
                   <p className="text-gray-900 whitespace-pre-wrap">{selectedReport.description}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Reported On</label>
+                    <label className="text-sm font-medium text-gray-600">Докладван на</label>
                     <p className="text-gray-900">{formatDate(selectedReport.createdAt)}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Last Updated</label>
+                    <label className="text-sm font-medium text-gray-600">Последна актуализация</label>
                     <p className="text-gray-900">{formatDate(selectedReport.updatedAt)}</p>
                   </div>
                 </div>
@@ -505,7 +506,7 @@ export default function UserReports() {
                   onClick={() => setSelectedReport(null)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                 >
-                  Close
+                  Затвори
                 </button>
               </div>
             </div>
@@ -519,26 +520,26 @@ export default function UserReports() {
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                {actionType === 'warning' && 'Send Warning Message'}
-                {actionType === 'suspend_3_days' && 'Deactivate User for 3 Days'}
-                {actionType === 'permanent_ban' && 'Permanently Ban User'}
+                {actionType === 'warning' && 'Изпрати предупредително съобщение'}
+                {actionType === 'suspend_3_days' && 'Деактивирай потребител за 3 дни'}
+                {actionType === 'permanent_ban' && 'Трайно банвай потребител'}
               </h3>
 
               <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">User: <span className="font-medium text-gray-900">{selectedReport.reportedUser?.display_name}</span></p>
-                <p className="text-sm text-gray-600">Email: <span className="font-medium text-gray-900">{selectedReport.reportedUser?.email}</span></p>
+                <p className="text-sm text-gray-600 mb-2">Потребител: <span className="font-medium text-gray-900">{selectedReport.reportedUser?.display_name}</span></p>
+                <p className="text-sm text-gray-600">Имейл: <span className="font-medium text-gray-900">{selectedReport.reportedUser?.email}</span></p>
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason
+                  Причина
                 </label>
                 <textarea
                   value={actionMessage}
                   onChange={(e) => setActionMessage(e.target.value)}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Enter the reason for this action..."
+                  placeholder="Въведете причината за това действие..."
                 />
               </div>
 
@@ -553,7 +554,7 @@ export default function UserReports() {
                   disabled={processingAction}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50"
                 >
-                  Cancel
+                  Отказ
                 </button>
                 <button
                   onClick={executeAction}
@@ -566,7 +567,7 @@ export default function UserReports() {
                       : 'bg-red-600 hover:bg-red-700'
                   }`}
                 >
-                  {processingAction ? 'Processing...' : 'Confirm Action'}
+                  {processingAction ? 'Обработка...' : 'Потвърди действието'}
                 </button>
               </div>
             </div>

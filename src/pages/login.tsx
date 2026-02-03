@@ -27,7 +27,6 @@ export default function Login() {
 
     try {
       const response = await authService.login(email, password);
-      console.log('Login successful:', response);
       
       // Store token and update context
       if (response.token) {
@@ -37,32 +36,24 @@ export default function Login() {
         const decodedToken = jwt.decode(response.token) as DecodedToken;
         const userIdFromToken = decodedToken?.userId;
         
-        console.log('Decoded userId:', userIdFromToken);
-        
         if (userIdFromToken) {
           // Check if user has multiple roles
           const rolesResponse = await fetch(`http://localhost:3007/users/${userIdFromToken}/roles`);
           
-          console.log('Roles response status:', rolesResponse.status);
-          
           if (rolesResponse.ok) {
             const rolesData = await rolesResponse.json();
             const roles = rolesData.roles || [];
-            
-            console.log('User roles:', roles);
-            
+
             // Update context after we know the roles
             ctx.changesUserToken(response.token);
             
             // If user has multiple roles, redirect to role selection
             if (roles.length > 1) {
-              console.log('User has multiple roles, redirecting to /select-role');
               router.push('/select-role');
               return;
             } else if (roles.length === 1) {
               // Auto-select the single role
               const role = roles[0];
-              console.log('Auto-selecting single role:', role);
               // Map string to Role enum
               let selectedRole = Role.unauthorised;
               if (role === 'client') selectedRole = Role.client;
@@ -97,14 +88,14 @@ export default function Login() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Влезте в профила си
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
+                Имейл адрес
               </label>
               <input
                 id="email"
@@ -115,12 +106,12 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Имейл адрес"
               />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
+                Парола
               </label>
               <input
                 id="password"
@@ -131,7 +122,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Парола"
               />
             </div>
           </div>
@@ -142,41 +133,21 @@ export default function Login() {
             </div>
           )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
-
-            <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </a>
-            </div>
-          </div>
-
           <div>
             <button
               type="submit"
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Влизане...' : 'Влизане'}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign up
+              Нямате профил?{' '}
+              <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Регистрирай се
               </a>
             </p>
           </div>

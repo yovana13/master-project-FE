@@ -52,14 +52,14 @@ export default function BugReports() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch bug reports');
+        throw new Error('Неуспешно зареждане на доклади за грешки');
       }
 
       const data = await response.json();
       setReports(data);
     } catch (err) {
       console.error('Error fetching bug reports:', err);
-      setError('Failed to load bug reports. Please try again.');
+      setError('Неуспешно зареждане на доклади за грешки. Моля, опитайте отново.');
     } finally {
       setLoading(false);
     }
@@ -80,17 +80,17 @@ export default function BugReports() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update status');
+        throw new Error('Неуспешна актуализация на статуса');
       }
 
-      setSuccessMessage('Status updated successfully!');
+      setSuccessMessage('Статусът е актуализиран успешно!');
       setTimeout(() => setSuccessMessage(null), 3000);
       
       // Refresh the list
       fetchBugReports();
     } catch (err) {
       console.error('Error updating status:', err);
-      setError('Failed to update status. Please try again.');
+      setError('Неуспешна актуализация на статуса. Моля, опитайте отново.');
       setTimeout(() => setError(null), 5000);
     } finally {
       setUpdatingId(null);
@@ -98,15 +98,16 @@ export default function BugReports() {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return 'Няма данни';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleDateString('en-US', {
+    if (isNaN(date.getTime())) return 'Невалидна дата';
+    return date.toLocaleDateString('bg-BG', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: false,
     });
   };
 
@@ -126,11 +127,11 @@ export default function BugReports() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'Pending';
+        return 'Чакащ';
       case 'in_progress':
-        return 'In Progress';
+        return 'В процес';
       case 'resolved':
-        return 'Resolved';
+        return 'Разрешен';
       default:
         return status;
     }
@@ -148,8 +149,8 @@ export default function BugReports() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Bug Reports</h1>
-          <p className="text-gray-600 mt-2">Manage and track reported bugs</p>
+          <h1 className="text-3xl font-bold text-gray-900">Доклади за грешки</h1>
+          <p className="text-gray-600 mt-2">Управлявайте и проследявайте докладвани грешки</p>
         </div>
 
         {/* Messages */}
@@ -170,7 +171,7 @@ export default function BugReports() {
           {/* Filter Buttons */}
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700 mr-2">Filter by status:</span>
+              <span className="text-sm font-medium text-gray-700 mr-2">Филтрирай по статус:</span>
               <button
                 onClick={() => setStatusFilter('all')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
@@ -179,7 +180,7 @@ export default function BugReports() {
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                All ({reports.length})
+                Всички ({reports.length})
               </button>
               <button
                 onClick={() => setStatusFilter('pending')}
@@ -189,7 +190,7 @@ export default function BugReports() {
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                Pending ({reports.filter(r => r.status === 'pending').length})
+                Чакащи ({reports.filter(r => r.status === 'pending').length})
               </button>
               <button
                 onClick={() => setStatusFilter('in_progress')}
@@ -199,7 +200,7 @@ export default function BugReports() {
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                In Progress ({reports.filter(r => r.status === 'in_progress').length})
+                В процес ({reports.filter(r => r.status === 'in_progress').length})
               </button>
               <button
                 onClick={() => setStatusFilter('resolved')}
@@ -209,14 +210,14 @@ export default function BugReports() {
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                 }`}
               >
-                Resolved ({reports.filter(r => r.status === 'resolved').length})
+                Разрешени ({reports.filter(r => r.status === 'resolved').length})
               </button>
             </div>
           </div>
 
           {loading ? (
             <div className="p-12 text-center">
-              <div className="text-gray-600">Loading bug reports...</div>
+              <div className="text-gray-600">Зареждане на доклади за грешки...</div>
             </div>
           ) : filteredReports.length === 0 ? (
             <div className="p-12 text-center">
@@ -224,12 +225,12 @@ export default function BugReports() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {statusFilter === 'all' ? 'No bug reports' : `No ${getStatusLabel(statusFilter).toLowerCase()} reports`}
+                {statusFilter === 'all' ? 'Няма доклади за грешки' : `Няма ${getStatusLabel(statusFilter).toLowerCase()} доклади`}
               </h3>
               <p className="text-gray-600">
                 {statusFilter === 'all' 
-                  ? 'There are no bug reports to display.' 
-                  : `There are no ${getStatusLabel(statusFilter).toLowerCase()} bug reports.`}
+                  ? 'Няма доклади за грешки за показване.' 
+                  : `Няма ${getStatusLabel(statusFilter).toLowerCase()} доклади за грешки.`}
               </p>
             </div>
           ) : (
@@ -238,22 +239,22 @@ export default function BugReports() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reporter
+                      Докладчик
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
+                      Описание
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Browser
+                      Браузър
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      Статус
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Reported
+                      Докладван
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      Действия
                     </th>
                   </tr>
                 </thead>
@@ -267,7 +268,7 @@ export default function BugReports() {
                             <div className="text-gray-500 text-xs">ID: {report.userId.substring(0, 8)}...</div>
                           )}
                           {!report.userId && (
-                            <div className="text-gray-500 text-xs">Unregistered</div>
+                            <div className="text-gray-500 text-xs">Нерегистриран</div>
                           )}
                         </div>
                       </td>
@@ -280,7 +281,7 @@ export default function BugReports() {
                                 onClick={() => setSelectedReport(report)}
                                 className="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
                               >
-                                View Full
+                                Виж пълен текст
                               </button>
                             </>
                           ) : (
@@ -306,7 +307,7 @@ export default function BugReports() {
                             disabled={updatingId === report.id}
                             className="text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50"
                           >
-                            {updatingId === report.id ? 'Updating...' : 'Start Working'}
+                            {updatingId === report.id ? 'Актуализиране...' : 'Започни работа'}
                           </button>
                         )}
                         {report.status === 'in_progress' && (
@@ -315,11 +316,11 @@ export default function BugReports() {
                             disabled={updatingId === report.id}
                             className="text-green-600 hover:text-green-800 font-medium disabled:opacity-50"
                           >
-                            {updatingId === report.id ? 'Updating...' : 'Mark Resolved'}
+                            {updatingId === report.id ? 'Актуализиране...' : 'Маркирай като разрешен'}
                           </button>
                         )}
                         {report.status === 'resolved' && (
-                          <span className="text-gray-400">Completed</span>
+                          <span className="text-gray-400">Завършен</span>
                         )}
                       </td>
                     </tr>
@@ -335,17 +336,17 @@ export default function BugReports() {
           <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
             <div>
               {statusFilter === 'all' ? (
-                <span>Total: {reports.length} {reports.length === 1 ? 'report' : 'reports'}</span>
+                <span>Общо: {reports.length} {reports.length === 1 ? 'доклад' : 'доклада'}</span>
               ) : (
                 <span>
-                  Showing {filteredReports.length} of {reports.length} {reports.length === 1 ? 'report' : 'reports'}
+                  Показани {filteredReports.length} от {reports.length} {reports.length === 1 ? 'доклад' : 'доклада'}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-4">
-              <span>Pending: {reports.filter(r => r.status === 'pending').length}</span>
-              <span>In Progress: {reports.filter(r => r.status === 'in_progress').length}</span>
-              <span>Resolved: {reports.filter(r => r.status === 'resolved').length}</span>
+              <span>Чакащи: {reports.filter(r => r.status === 'pending').length}</span>
+              <span>В процес: {reports.filter(r => r.status === 'in_progress').length}</span>
+              <span>Разрешени: {reports.filter(r => r.status === 'resolved').length}</span>
             </div>
           </div>
         )}
@@ -357,7 +358,7 @@ export default function BugReports() {
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">Bug Report Details</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Детайли на доклада за грешка</h3>
               <button
                 onClick={() => setSelectedReport(null)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -371,18 +372,18 @@ export default function BugReports() {
             {/* Content */}
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reporter</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Докладчик</label>
                 <p className="text-sm text-gray-900">{selectedReport.email}</p>
                 {selectedReport.userId && (
-                  <p className="text-xs text-gray-500">User ID: {selectedReport.userId}</p>
+                  <p className="text-xs text-gray-500">Потребителски ID: {selectedReport.userId}</p>
                 )}
                 {!selectedReport.userId && (
-                  <p className="text-xs text-gray-500">Unregistered User</p>
+                  <p className="text-xs text-gray-500">Нерегистриран потребител</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Статус</label>
                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(selectedReport.status)}`}>
                   {getStatusLabel(selectedReport.status)}
                 </span>
@@ -390,26 +391,26 @@ export default function BugReports() {
 
               {selectedReport.browserInfo && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Browser Information</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Информация за браузъра</label>
                   <p className="text-sm text-gray-900">{selectedReport.browserInfo}</p>
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Описание</label>
                 <div className="text-sm text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-md border border-gray-200">
                   {selectedReport.description}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reported</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Докладван</label>
                 <p className="text-sm text-gray-900">{formatDate(selectedReport.createdAt)}</p>
               </div>
 
               {selectedReport.updatedAt && new Date(selectedReport.updatedAt).getTime() !== new Date(selectedReport.createdAt).getTime() && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Последна актуализация</label>
                   <p className="text-sm text-gray-900">{formatDate(selectedReport.updatedAt)}</p>
                 </div>
               )}
@@ -421,7 +422,7 @@ export default function BugReports() {
                 onClick={() => setSelectedReport(null)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md transition-colors"
               >
-                Close
+                Затвори
               </button>
               {selectedReport.status === 'pending' && (
                 <button
@@ -431,7 +432,7 @@ export default function BugReports() {
                   }}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
                 >
-                  Start Working
+                  Започни работа
                 </button>
               )}
               {selectedReport.status === 'in_progress' && (
@@ -442,7 +443,7 @@ export default function BugReports() {
                   }}
                   className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
                 >
-                  Mark Resolved
+                  Маркирай като разрешен
                 </button>
               )}
             </div>

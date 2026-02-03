@@ -12,8 +12,8 @@ interface CitiesSelectorProps {
 export default function CitiesSelector({
   selectedCities,
   onCitiesChange,
-  label = 'Select Cities',
-  description = 'Choose the cities where you\'re willing to work',
+  label = 'Изберете градове',
+  description = 'Изберете градовете, в които сте готови да работите',
   showSelectedCities = true
 }: CitiesSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +43,7 @@ export default function CitiesSelector({
       {showSelectedCities && selectedCities.length > 0 && (
         <div className="mb-4">
           <h3 className="text-sm font-medium text-gray-700 mb-2">
-            Selected Cities ({selectedCities.length})
+            Избрани градове ({selectedCities.length})
           </h3>
           <div className="flex flex-wrap gap-2">
             {selectedCities.map((city) => (
@@ -56,7 +56,7 @@ export default function CitiesSelector({
                   type="button"
                   onClick={() => handleRemoveCity(city)}
                   className="text-indigo-600 hover:text-indigo-800"
-                  title="Remove city"
+                  title="Премахни град"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -77,7 +77,7 @@ export default function CitiesSelector({
         
         <input
           type="text"
-          placeholder="Search cities..."
+          placeholder="Търсене на градове..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm mb-2"
@@ -104,7 +104,7 @@ export default function CitiesSelector({
         
         {selectedCities.length > 0 && (
           <p className="mt-2 text-xs text-gray-600">
-            Selected {selectedCities.length} {selectedCities.length === 1 ? 'city' : 'cities'}
+            Избрани {selectedCities.length} {selectedCities.length === 1 ? 'град' : 'града'}
           </p>
         )}
       </div>

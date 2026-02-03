@@ -91,8 +91,8 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h3 className="text-xl font-semibold text-gray-900">Report a Bug</h3>
-            <p className="text-sm text-gray-600 mt-1">Help us improve by reporting issues</p>
+            <h3 className="text-xl font-semibold text-gray-900">Докладвай грешка</h3>
+            <p className="text-sm text-gray-600 mt-1">Помогнете ни да подобрим приложението</p>
           </div>
           <button
             onClick={onClose}
@@ -109,7 +109,7 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email *
+              Имейл *
             </label>
             <input
               type="email"
@@ -119,17 +119,17 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
               required
               disabled={loadingEmail || (userId && email !== '')}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-              placeholder={loadingEmail ? "Loading your email..." : "your.email@example.com"}
+              placeholder={loadingEmail ? "Зареждане на имейл..." : "email@example.com"}
             />
             {userId && email && (
-              <p className="text-xs text-gray-500 mt-1">Using your account email</p>
+              <p className="text-xs text-gray-500 mt-1">Използва се имейлът от вашия профил</p>
             )}
           </div>
 
           {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Description *
+              Описание *
             </label>
             <textarea
               id="description"
@@ -138,14 +138,14 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
               required
               rows={6}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-              placeholder="Please describe the bug in detail: what happened, what you expected, and steps to reproduce..."
+              placeholder="Моля, опишете грешката подробно: какво се случи, какво очаквахте и стъпки за възпроизвеждане..."
             />
           </div>
 
           {/* Browser Info */}
           <div>
             <label htmlFor="browserInfo" className="block text-sm font-medium text-gray-700 mb-1">
-              Browser Information (Optional)
+              Информация за браузъра (По желание)
             </label>
             <input
               type="text"
@@ -153,7 +153,7 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
               value={browserInfo}
               onChange={(e) => setBrowserInfo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="e.g., Chrome 120 on Windows"
+              placeholder="напр. Chrome 120 на Windows"
             />
           </div>
 
@@ -165,7 +165,7 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
               disabled={submitting}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50"
             >
-              Cancel
+              Отказ
             </button>
             <button
               type="submit"
@@ -178,10 +178,10 @@ export default function ReportBugModal({ isOpen, userId, onClose, onSuccess, onE
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Submitting...
+                  Изпращане...
                 </>
               ) : (
-                'Submit Report'
+                'Изпрати доклад'
               )}
             </button>
           </div>
