@@ -11,11 +11,17 @@ interface Tasker {
   display_name: string;
   profile_image_url?: string;
   verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected';
+  user?: {
+    email?: string;
+    phone?: string;
+  };
 }
 
 interface User {
   id: string;
-  display_name: string;
+  name: string;
+  email?: string;
+  phone?: string;
   profile_image_url?: string;
 }
 
@@ -92,6 +98,7 @@ export default function MyBookings() {
       }
 
       const data = await response.json();
+      console.log('Fetched bookings data:', data);
       setBookings(data);
     } catch (err) {
       console.error('Error fetching bookings:', err);
@@ -209,67 +216,118 @@ export default function MyBookings() {
         </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-gray-900">
-            ${(booking.priceCents / 100).toFixed(2)}
+            €{(booking.priceCents / 100).toFixed(2)}
           </p>
         </div>
       </div>
 
       <div className="space-y-3">
         {/* Client Info (for taskers) */}
-        {userRole === Role.tasker && booking.user && (
-          <div className="flex items-center gap-3">
-            {booking.user.profile_image_url ? (
-              <img
-                src={booking.user.profile_image_url}
-                alt={booking.user.display_name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center">
-                <span className="text-lg text-blue-700">
-                  {booking.user.display_name.charAt(0).toUpperCase()}
-                </span>
+        {userRole === Role.tasker && booking.user && booking.user.name && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              {booking.user.profile_image_url ? (
+                <img
+                  src={booking.user.profile_image_url}
+                  alt={booking.user.name}
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl text-blue-700">
+                    {booking.user.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 mb-1">
+                  {booking.user.name}
+                </p>
+                <p className="text-xs text-blue-600 font-medium mb-2">Информация за клиента</p>
+                <div className="space-y-1.5">
+                  {booking.user.phone && (
+                    <div className="flex items-center gap-2 text-xs text-gray-700">
+                      <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <a href={`tel:${booking.user.phone}`} className="hover:text-blue-600 font-medium">
+                        {booking.user.phone}
+                      </a>
+                    </div>
+                  )}
+                  {booking.user.email && (
+                    <div className="flex items-center gap-2 text-xs text-gray-700">
+                      <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <a href={`mailto:${booking.user.email}`} className="hover:text-blue-600 font-medium truncate">
+                        {booking.user.email}
+                      </a>
+                    </div>
+                  )}
+                  {!booking.user.phone && !booking.user.email && (
+                    <p className="text-xs text-gray-500 italic">Няма налична информация за контакт</p>
+                  )}
+                </div>
               </div>
-            )}
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {booking.user.display_name}
-              </p>
-              <p className="text-xs text-gray-500">Клиент</p>
             </div>
           </div>
         )}
 
         {/* Tasker Info (for clients) */}
-        {userRole === Role.client && booking.tasker && (
-          <div className="flex items-center gap-3">
-            {booking.tasker.profile_image_url ? (
-              <img
-                src={booking.tasker.profile_image_url}
-                alt={booking.tasker.display_name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-lg text-gray-500">
-                  {booking.tasker.display_name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-gray-900">
-                  {booking.tasker.display_name}
-                </p>
-                {booking.tasker.verification_status === 'verified' && (
-                  <span className="inline-flex items-center text-blue-600" title="Потвърден изпълнител">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
+        {userRole === Role.client && booking.tasker && booking.tasker.display_name && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              {booking.tasker.profile_image_url ? (
+                <img
+                  src={booking.tasker.profile_image_url}
+                  alt={booking.tasker.display_name}
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-indigo-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl text-indigo-700">
+                    {booking.tasker.display_name.charAt(0).toUpperCase()}
                   </span>
-                )}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {booking.tasker.display_name}
+                  </p>
+                  {booking.tasker.verification_status === 'verified' && (
+                    <span className="inline-flex items-center text-blue-600" title="Потвърден изпълнител">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-indigo-600 font-medium mb-2">Информация за изпълнител</p>
+                <div className="space-y-1.5">
+                  {booking.tasker.user?.phone && (
+                    <div className="flex items-center gap-2 text-xs text-gray-700">
+                      <svg className="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <a href={`tel:${booking.tasker.user.phone}`} className="hover:text-indigo-600 font-medium">
+                        {booking.tasker.user.phone}
+                      </a>
+                    </div>
+                  )}
+                  {booking.tasker.user?.email && (
+                    <div className="flex items-center gap-2 text-xs text-gray-700">
+                      <svg className="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <a href={`mailto:${booking.tasker.user.email}`} className="hover:text-indigo-600 font-medium truncate">
+                        {booking.tasker.user.email}
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Изпълнител</p>
             </div>
           </div>
         )}
@@ -342,7 +400,7 @@ export default function MyBookings() {
           )}
           {userRole === Role.tasker && booking.user && (
             <button
-              onClick={() => handleReportUser(booking.userId, booking.user!.display_name)}
+              onClick={() => handleReportUser(booking.userId, booking.user!.name)}
               className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
               title="Докладвай клиент"
             >

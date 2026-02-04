@@ -57,6 +57,13 @@ export default function BookService() {
     endTime: string;
     price: string;
   } | null>(null);
+  const [sortBy, setSortBy] = useState<'rating' | 'price_low' | 'price_high' | 'reviews'>('rating');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    verifiedOnly: false,
+    minRating: 0,
+    maxPrice: Infinity,
+  });
 
   useEffect(() => {
     if (!serviceId) return;
@@ -96,6 +103,59 @@ export default function BookService() {
       setLoading(false);
     }
   };
+
+  const filteredTaskers = taskers.filter(tasker => {
+    // Filter by verification status
+    if (filters.verifiedOnly && tasker.verification_status !== 'verified') {
+      return false;
+    }
+    
+    // Filter by minimum rating
+    if (filters.minRating > 0 && (tasker.rating_avg || 0) < filters.minRating) {
+      return false;
+    }
+    
+    // Filter by max price
+    if (filters.maxPrice !== Infinity) {
+      const taskerPrice = bookingData?.pricingModel === 'hourly' 
+        ? (tasker.price_hourly || 0) / 100 
+        : (tasker.price_per_sq_m || 0) / 100;
+      if (taskerPrice > filters.maxPrice) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
+  const sortedTaskers = [...filteredTaskers].sort((a, b) => {
+    switch (sortBy) {
+      case 'rating':
+        return (b.rating_avg || 0) - (a.rating_avg || 0);
+      case 'price_low':
+        const priceA = bookingData?.pricingModel === 'hourly' ? (a.price_hourly || Infinity) : (a.price_per_sq_m || Infinity);
+        const priceB = bookingData?.pricingModel === 'hourly' ? (b.price_hourly || Infinity) : (b.price_per_sq_m || Infinity);
+        return priceA - priceB;
+      case 'price_high':
+        const priceAHigh = bookingData?.pricingModel === 'hourly' ? (a.price_hourly || 0) : (a.price_per_sq_m || 0);
+        const priceBHigh = bookingData?.pricingModel === 'hourly' ? (b.price_hourly || 0) : (b.price_per_sq_m || 0);
+        return priceBHigh - priceAHigh;
+      case 'reviews':
+        return (b.rating_count || 0) - (a.rating_count || 0);
+      default:
+        return 0;
+    }
+  });
+
+  const handleResetFilters = () => {
+    setFilters({
+      verifiedOnly: false,
+      minRating: 0,
+      maxPrice: Infinity,
+    });
+  };
+
+  const hasActiveFilters = filters.verifiedOnly || filters.minRating > 0 || filters.maxPrice !== Infinity;
 
   const handleTaskerSelect = async (taskerId: number) => {
     const tasker = taskers.find(t => t.id === taskerId);
@@ -220,7 +280,7 @@ export default function BookService() {
           hour: '2-digit',
           minute: '2-digit'
         }),
-        price: `$${(priceCents / 100).toFixed(2)}`
+        price: `€${(priceCents / 100).toFixed(2)}`
       });
       setShowBookingSuccess(true);
     } catch (err) {
@@ -357,9 +417,125 @@ export default function BookService() {
 
           {/* Taskers List */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Налични изпълнители ({taskers.length})
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Налични изпълнители ({sortedTaskers.length}{taskers.length !== sortedTaskers.length && ` от ${taskers.length}`})
+              </h2>
+              
+              {taskers.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                      hasActiveFilters 
+                        ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300' 
+                        : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Филтри
+                    {hasActiveFilters && (
+                      <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full">
+                        {[filters.verifiedOnly, filters.minRating > 0, filters.maxPrice !== Infinity].filter(Boolean).length}
+                      </span>
+                    )}
+                  </button>
+                  
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="sort" className="text-sm font-medium text-gray-700">
+                      Сортирай по:
+                    </label>
+                    <select
+                      id="sort"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                    >
+                      <option value="rating">Най-високо оценени</option>
+                      <option value="reviews">Най-много отзиви</option>
+                      <option value="price_low">Цена: ниска към висока</option>
+                      <option value="price_high">Цена: висока към ниска</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Filter Panel */}
+            {showFilters && taskers.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Филтри</h3>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={handleResetFilters}
+                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                    >
+                      Изчисти филтри
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Verified Only Filter */}
+                  <div>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filters.verifiedOnly}
+                        onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
+                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700">Само потвърдени</span>
+                        <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Minimum Rating Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Минимален рейтинг
+                    </label>
+                    <select
+                      value={filters.minRating}
+                      onChange={(e) => setFilters({ ...filters, minRating: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                    >
+                      <option value="0">Всички</option>
+                      <option value="3">3+ ⭐</option>
+                      <option value="4">4+ ⭐</option>
+                      <option value="4.5">4.5+ ⭐</option>
+                    </select>
+                  </div>
+
+                  {/* Max Price Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Максимална цена {bookingData?.pricingModel === 'hourly' ? '($/час)' : '($/m²)'}
+                    </label>
+                    <select
+                      value={filters.maxPrice === Infinity ? 'all' : filters.maxPrice}
+                      onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value === 'all' ? Infinity : parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                    >
+                      <option value="all">Всички</option>
+                      <option value="10">До $10</option>
+                      <option value="20">До $20</option>
+                      <option value="30">До $30</option>
+                      <option value="50">До $50</option>
+                      <option value="75">До $75</option>
+                      <option value="100">До $100</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {taskers.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
@@ -375,7 +551,7 @@ export default function BookService() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {taskers.map((tasker) => (
+                {sortedTaskers.map((tasker) => (
                   <div
                     key={tasker.id}
                     className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6"
@@ -433,12 +609,12 @@ export default function BookService() {
                         <div className="text-sm">
                           {bookingData?.pricingModel === 'hourly' && tasker.price_hourly && (
                             <span className="font-semibold text-indigo-600">
-                              ${(tasker.price_hourly / 100).toFixed(2)}/ч
+                              €{(tasker.price_hourly / 100).toFixed(2)}/ч
                             </span>
                           )}
                           {bookingData?.pricingModel === 'sq_m' && tasker.price_per_sq_m && (
                             <span className="font-semibold text-indigo-600">
-                              ${(tasker.price_per_sq_m / 100).toFixed(2)}/m²
+                              €{(tasker.price_per_sq_m / 100).toFixed(2)}/m²
                             </span>
                           )}
                         </div>
@@ -557,7 +733,7 @@ export default function BookService() {
                   }}
                   className="w-full px-4 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 transition-colors"
                 >
-                  Влизане
+                  Вход
                 </button>
                 <button
                   onClick={() => {

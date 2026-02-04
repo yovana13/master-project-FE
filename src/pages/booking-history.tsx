@@ -272,7 +272,7 @@ export default function BookingHistory() {
                   <div className="flex items-center justify-between mb-4">
                     {getStatusBadge(booking.status)}
                     <span className="text-xl font-bold text-gray-900">
-                      ${(booking.priceCents / 100).toFixed(2)}
+                      €{(booking.priceCents / 100).toFixed(2)}
                     </span>
                   </div>
 

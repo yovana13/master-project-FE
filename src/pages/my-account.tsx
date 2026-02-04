@@ -328,23 +328,55 @@ export default function MyAccount() {
     setSuccessMessage(null);
 
     try {
-      const response = await fetch(`http://localhost:3007/users/${userId}/tasker-profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(taskerFormData),
-      });
+      // If there's a profile image file, use FormData with PATCH
+      if (profileImageFile) {
+        const formData = new FormData();
+        formData.append('profileImage', profileImageFile);
+        formData.append('bio', taskerFormData.bio);
+        formData.append('display_name', taskerFormData.display_name);
+        if (taskerFormData.address) {
+          formData.append('address', taskerFormData.address);
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to update tasker profile' }));
-        throw new Error(errorData.message || 'Failed to update tasker profile');
+        const response = await fetch(`http://localhost:3007/users/${userId}/tasker-profile`, {
+          method: 'PATCH',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Failed to update tasker profile' }));
+          throw new Error(errorData.message || 'Failed to update tasker profile');
+        }
+
+        const updatedData = await response.json();
+        setTaskerProfile(updatedData);
+        setSuccessMessage('Профилът на изпълнител е актуализиран успешно!');
+        setIsEditingTasker(false);
+        setProfileImageFile(null);
+        
+        // Reset file input
+        const fileInput = document.getElementById('profile-image') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      } else {
+        // No profile image, use regular JSON PATCH
+        const response = await fetch(`http://localhost:3007/users/${userId}/tasker-profile`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(taskerFormData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Failed to update tasker profile' }));
+          throw new Error(errorData.message || 'Failed to update tasker profile');
+        }
+
+        const updatedData = await response.json();
+        setTaskerProfile(updatedData);
+        setSuccessMessage('Профилът на изпълнител е актуализиран успешно!');
+        setIsEditingTasker(false);
       }
-
-      const updatedData = await response.json();
-      setTaskerProfile(updatedData);
-      setSuccessMessage('Профилът на изпълнител е актуализиран успешно!');
-      setIsEditingTasker(false);
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(null), 3000);

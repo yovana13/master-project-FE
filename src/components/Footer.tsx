@@ -5,24 +5,24 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* About Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Master Project</h3>
+            <h3 className="text-lg font-semibold mb-4">TaskTrust</h3>
             <p className="text-gray-400 text-sm">
-              Your trusted platform for connecting clients with professional taskers.
+              Вашата доверена платформа за свързване на клиенти с професионални специалисти.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-4">Бързи връзки</h3>
             <ul className="space-y-2">
               <li>
                 <a href="/" className="text-gray-400 hover:text-white text-sm transition-colors">
-                  Home
+                  Начало
                 </a>
               </li>
               <li>
-                <a href="/become-a-tasker" className="text-gray-400 hover:text-white text-sm transition-colors">
-                  Become a Tasker
+                <a href="/signup" className="text-gray-400 hover:text-white text-sm transition-colors">
+                  Станете професионалист
                 </a>
               </li>
             </ul>
@@ -30,12 +30,12 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact</h3>
+            <h3 className="text-lg font-semibold mb-4">Контакти</h3>
             <p className="text-gray-400 text-sm">
-              Email: support@masterproject.com
+              Имейл: support@tasktrust.com
             </p>
             <p className="text-gray-400 text-sm mt-2">
-              Phone: +359 123 456 789
+              Телефон: +359 123 456 789
             </p>
           </div>
         </div>
@@ -43,7 +43,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="border-t border-gray-700 mt-8 pt-6 text-center">
           <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} Master Project. All rights reserved.
+            &copy; {new Date().getFullYear()} TaskTrust. Всички права запазени.
           </p>
         </div>
       </div>

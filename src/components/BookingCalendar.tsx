@@ -242,7 +242,7 @@ export default function BookingCalendar({
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-250px)]">
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-gray-600">Зареждане на наличност...</div>

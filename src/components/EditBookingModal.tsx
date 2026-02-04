@@ -440,7 +440,7 @@ export default function EditBookingModal({
                 Цена
               </label>
               <div className="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
-                ${(formData.priceCents / 100).toFixed(2)}
+                €{(formData.priceCents / 100).toFixed(2)}
               </div>
               <p className="text-xs text-gray-500 mt-1">Цената не може да бъде променена</p>
             </div>

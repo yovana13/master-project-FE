@@ -10,7 +10,7 @@ export default function Stepper({ currentStep, totalSteps }: StepperProps) {
     <div className="w-full py-4">
       <div className="flex items-center justify-between">
         {steps.map((step, index) => (
-          <div key={step} className="flex items-center flex-1">
+          <div key={step} className="flex items-center flex-1 justify-center">
             {/* Step circle */}
             <div className="relative flex flex-col items-center">
               <div
@@ -33,20 +33,9 @@ export default function Stepper({ currentStep, totalSteps }: StepperProps) {
                 )}
               </div>
               <span className="mt-2 text-xs font-medium text-gray-600">
-                Step {step}
+                Стъпка {step}
               </span>
             </div>
-
-            {/* Connector line */}
-            {index < steps.length - 1 && (
-              <div className="flex-1 h-0.5 mx-2">
-                <div
-                  className={`h-full transition-colors ${
-                    step < currentStep ? 'bg-indigo-600' : 'bg-gray-300'
-                  }`}
-                />
-              </div>
-            )}
           </div>
         ))}
       </div>
