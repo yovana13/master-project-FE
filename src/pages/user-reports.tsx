@@ -411,7 +411,7 @@ export default function UserReports() {
                               onClick={() => handleAction(report, 'permanent_ban')}
                               className="text-red-600 hover:text-red-800 font-medium text-left"
                             >
-                              Трайна бан
+                              Перманентен бан
                             </button>
                           </div>
                         )}

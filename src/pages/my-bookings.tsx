@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { AuthContext } from '../context/authContext';
 import EditBookingModal from '../components/EditBookingModal';
 import ReportUserModal from '../components/ReportUserModal';
+import TaskerBookingCard from '../components/TaskerBookingCard';
 import { Role } from '../enums/role.enum';
 
 interface Tasker {
@@ -141,6 +142,119 @@ export default function MyBookings() {
     setTimeout(() => setError(null), 5000);
   };
 
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'accepted' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to accept booking');
+      }
+
+      // Refresh the bookings list
+      await fetchBookings();
+      setReportSuccess('Резервацията е приета успешно!');
+      setTimeout(() => setReportSuccess(null), 5000);
+    } catch (error) {
+      console.error('Error accepting booking:', error);
+      setError('Неуспешно приемане на резервацията. Моля, опитайте отново.');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
+  const handleDeclineBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'declined' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to decline booking');
+      }
+
+      // Refresh the bookings list
+      await fetchBookings();
+      setReportSuccess('Резервацията е отказана успешно!');
+      setTimeout(() => setReportSuccess(null), 5000);
+    } catch (error) {
+      console.error('Error declining booking:', error);
+      setError('Неуспешно отказване на резервацията. Моля, опитайте отново.');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/cancel`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel booking');
+      }
+
+      // Refresh the bookings list
+      await fetchBookings();
+      setReportSuccess('Резервацията е отменена успешно!');
+      setTimeout(() => setReportSuccess(null), 5000);
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      setError('Неуспешно отменяне на резервацията. Моля, опитайте отново.');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
+  const handleNoShow = async (bookingId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/no-show`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to mark booking as no-show');
+      }
+
+      // Refresh the bookings list
+      await fetchBookings();
+      setReportSuccess('Резервацията е маркирана като неявяване.');
+      setTimeout(() => setReportSuccess(null), 5000);
+    } catch (error) {
+      console.error('Error marking booking as no-show:', error);
+      setError('Неуспешно маркиране на резервацията. Моля, опитайте отново.');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
+  const handleCompleteBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/complete`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to complete booking');
+      }
+
+      // Refresh the bookings list
+      await fetchBookings();
+      setReportSuccess('Резервацията е завършена успешно!');
+      setTimeout(() => setReportSuccess(null), 5000);
+    } catch (error) {
+      console.error('Error completing booking:', error);
+      setError('Неуспешно завършване на резервацията. Моля, опитайте отново.');
+      setTimeout(() => setError(null), 5000);
+    }
+  };
+
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleDateString('bg-BG', {
@@ -195,7 +309,31 @@ export default function MyBookings() {
     return status === 'pending' || status === 'accepted';
   };
 
-  const renderBookingCard = (booking: Booking) => (
+  const renderBookingCard = (booking: Booking) => {
+    // Use TaskerBookingCard component for taskers
+    if (userRole === Role.tasker && booking.user) {
+      return (
+        <TaskerBookingCard
+          key={booking.id}
+          booking={{
+            ...booking,
+            user: booking.user,
+            service: booking.service || { id: '', name: 'Услуга' }
+          }}
+          showActions={booking.status === 'pending'}
+          showEditReport={canEdit(booking.status)}
+          onAccept={handleAcceptBooking}
+          onDecline={handleDeclineBooking}
+          onCancel={handleCancelBooking}
+          onComplete={handleCompleteBooking}
+          onEdit={handleEdit}
+          onReport={handleReportUser}
+        />
+      );
+    }
+
+    // Existing card rendering for clients
+    return (
     <div
       key={booking.id}
       className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200"
@@ -411,8 +549,40 @@ export default function MyBookings() {
           )}
         </div>
       )}
+
+      {/* Cancel Button for Clients */}
+      {userRole === Role.client && (booking.status === 'pending' || booking.status === 'accepted') && 
+       ((new Date(booking.startsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60) > 24) && (
+        <div className="mt-4">
+          <button
+            onClick={() => handleCancelBooking(booking.id)}
+            className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Отмени резервация
+          </button>
+        </div>
+      )}
+
+      {/* No Show Button for Clients */}
+      {userRole === Role.client && booking.status === 'accepted' && new Date() >= new Date(booking.startsAt) && (
+        <div className="mt-4">
+          <button
+            onClick={() => handleNoShow(booking.id)}
+            className="w-full px-4 py-2 text-sm font-medium text-orange-700 bg-orange-100 rounded-md hover:bg-orange-200 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Неявяване
+          </button>
+        </div>
+      )}
     </div>
-  );
+    );
+  };
 
   if (loading) {
     return (

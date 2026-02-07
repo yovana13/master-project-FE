@@ -7,6 +7,7 @@ import { Role } from '../enums/role.enum'
 import InfoMessage from '../components/InfoMessage'
 import AdminsTable from '../components/AdminsTable'
 import BookingModal from '../components/BookingModal'
+import TaskerBookingCard from '../components/TaskerBookingCard'
 
 interface Category {
   id: number;
@@ -36,6 +37,8 @@ interface TaskerBooking {
   priceCents: number;
   status: 'pending' | 'accepted';
   details: string;
+  createdAt: string;
+  updatedAt: string;
   user: {
     id: string;
     name: string;
@@ -191,6 +194,25 @@ export default function Home() {
     } catch (error) {
       console.error('Error declining booking:', error);
       setInfoMessage({ text: 'Failed to decline booking. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/cancel`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to cancel booking');
+      }
+
+      // Refresh the bookings list
+      await fetchTaskerBookings();
+      setInfoMessage({ text: 'Booking cancelled successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      setInfoMessage({ text: 'Failed to cancel booking. Please try again.', type: 'error' });
     }
   };
 
@@ -578,111 +600,17 @@ export default function Home() {
                   <p className="text-gray-500 text-sm mt-1">Чакащите и приетите резервации ще се показват тук</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {taskerBookings.map((booking) => (
-                    <div
+                    <TaskerBookingCard
                       key={booking.id}
-                      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      {/* Status Badge */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            booking.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
-                          }`}
-                        >
-                          {booking.status === 'pending' ? 'Чакаща' : 'Приета'}
-                        </span>
-                        <span className="text-lg font-bold text-gray-900">
-                          €{(booking.priceCents / 100).toFixed(2)}
-                        </span>
-                      </div>
-
-                      {/* Service Name */}
-                      <h3 className="font-semibold text-gray-900 mb-2">
-                        {booking.service.name}
-                      </h3>
-
-                      {/* Client Info */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <span className="text-sm text-gray-600">{booking.user.name}</span>
-                      </div>
-
-                      {/* Location */}
-                      <div className="flex items-start gap-2 mb-2">
-                        <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <div className="text-sm text-gray-600">
-                          <div>{booking.address}</div>
-                          <div className="text-gray-500">{booking.city}</div>
-                        </div>
-                      </div>
-
-                      {/* Date & Time */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="text-sm text-gray-600">
-                          {new Date(booking.startsAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                          {' at '}
-                          {new Date(booking.startsAt).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
-                      </div>
-
-                      {/* Action Buttons */}
-                      {booking.status === 'pending' ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleDeclineBooking(booking.id)}
-                            className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
-                          >
-                            Откажи
-                          </button>
-                          <button
-                            onClick={() => handleAcceptBooking(booking.id)}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-                          >
-                            Приеми
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              if (booking.user.phone) {
-                                window.location.href = `tel:${booking.user.phone}`;
-                              } else if (booking.user.email) {
-                                window.location.href = `mailto:${booking.user.email}`;
-                              }
-                            }}
-                            className="flex-1 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
-                          >
-                            Свържи се с клиента
-                          </button>
-                          <button
-                            onClick={() => handleCompleteBooking(booking.id)}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors"
-                          >
-                            Маркирай като завършена
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                      booking={booking}
+                      onAccept={handleAcceptBooking}
+                      onDecline={handleDeclineBooking}
+                      onCancel={handleCancelBooking}
+                      onComplete={handleCompleteBooking}
+                      showActions={true}
+                    />
                   ))}
                 </div>
               )}
