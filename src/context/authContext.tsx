@@ -82,25 +82,21 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = props => {
       }
       // Use decode instead of verify for client-side token parsing
       const decodedToken = jwt.decode(token) as DecodedToken;
-      
       console.log("Decoded token:", decodedToken);
-      
       if (!decodedToken) {
         return null;
       }
-      
       const expirationTime = decodedToken.exp * 1000;
-
       if (expirationTime < Date.now()) {
+        // Token expired: clear userRole from localStorage
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('token');
         return null;
       }
       const userId = decodedToken.userId;
-      
       // Get role from token if available
       const role: Role = decodedToken.role || Role.unauthorised;
-      
       console.log("Extracted role:", role);
-      
       return { userId, role };
     } catch (error) {
       console.error("Token decode error:", error);

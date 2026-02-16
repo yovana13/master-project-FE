@@ -80,4 +80,36 @@ export const authService = {
 
     return response.json();
   },
+
+  /**
+   * Request password reset token
+   */
+  async forgotPassword(email: string): Promise<{ message: string; resetToken?: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to request reset token' }));
+      throw new Error(error.message || 'Failed to request reset token');
+    }
+    return response.json();
+  },
+
+  /**
+   * Reset password with token
+   */
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to reset password' }));
+      throw new Error(error.message || 'Failed to reset password');
+    }
+    return response.json();
+  },
 };

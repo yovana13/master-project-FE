@@ -595,9 +595,9 @@ export default function MyAccount() {
                       id="email"
                       name="email"
                       value={formData.email}
-                      onChange={handleChange}
+                      readOnly
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
                     />
                   ) : (
                     <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
@@ -617,9 +617,9 @@ export default function MyAccount() {
                       id="phone"
                       name="phone"
                       value={formData.phone}
-                      onChange={handleChange}
+                      readOnly
                       placeholder="+359123456789"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
                     />
                   ) : (
                     <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-900">
