@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import { AuthContext } from '../context/authContext';
 import { Role } from '../enums/role.enum';
 
+import { uploadPortfolioImages, getPortfolioImages, deletePortfolioImages } from '../services/portfolioService';
+
 interface UserData {
   id: string;
   name: string;
@@ -67,6 +69,15 @@ export default function MyAccount() {
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
 
+  // Portfolio state
+  const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
+  const [portfolioUploading, setPortfolioUploading] = useState(false);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
+  const [portfolioSuccess, setPortfolioSuccess] = useState<string | null>(null);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
+  const [portfolioDeleting, setPortfolioDeleting] = useState(false);
+
   // Verification document state
   const [documentType, setDocumentType] = useState<'id_card' | 'passport' | 'driver_license' | 'other'>('id_card');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
@@ -96,8 +107,85 @@ export default function MyAccount() {
     // Fetch tasker profile if user is a tasker
     if (userRole === Role.tasker) {
       fetchTaskerProfile();
+      fetchPortfolioImages();
     }
   }, [userId, userRole]);
+
+  // Fetch portfolio images for tasker
+  const fetchPortfolioImages = async () => {
+    if (!userId) return;
+    try {
+      const images = await getPortfolioImages(userId);
+      setPortfolioImages(images);
+    } catch (err) {
+      setPortfolioError('Неуспешно зареждане на портфолио.');
+    }
+  };
+
+  // Handle portfolio file selection
+  const handlePortfolioFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArr = Array.from(e.target.files);
+      if (filesArr.length + portfolioImages.length > 10) {
+        setPortfolioError('Може да качите до 10 изображения общо.');
+        return;
+      }
+      setPortfolioFiles(filesArr);
+      setPortfolioError(null);
+    }
+  };
+
+  // Toggle image selection for deletion
+  const toggleImageSelection = (url: string) => {
+    setSelectedForDeletion(prev => {
+      const next = new Set(prev);
+      if (next.has(url)) {
+        next.delete(url);
+      } else {
+        next.add(url);
+      }
+      return next;
+    });
+  };
+
+  // Delete selected portfolio images
+  const handlePortfolioDelete = async () => {
+    if (!userId || selectedForDeletion.size === 0) return;
+    setPortfolioDeleting(true);
+    setPortfolioError(null);
+    setPortfolioSuccess(null);
+    try {
+      await deletePortfolioImages(userId, Array.from(selectedForDeletion));
+      setPortfolioSuccess('Избраните изображения са изтрити успешно!');
+      setSelectedForDeletion(new Set());
+      fetchPortfolioImages();
+    } catch (err) {
+      setPortfolioError('Неуспешно изтриване на изображения.');
+    } finally {
+      setPortfolioDeleting(false);
+    }
+  };
+
+  // Upload portfolio images
+  const handlePortfolioUpload = async () => {
+    if (!userId || portfolioFiles.length === 0) return;
+    setPortfolioUploading(true);
+    setPortfolioError(null);
+    setPortfolioSuccess(null);
+    try {
+      await uploadPortfolioImages(userId, portfolioFiles);
+      setPortfolioSuccess('Изображенията са качени успешно!');
+      setPortfolioFiles([]);
+      fetchPortfolioImages();
+      // Reset file input
+      const fileInput = document.getElementById('portfolio-files') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    } catch (err) {
+      setPortfolioError('Неуспешно качване на изображения.');
+    } finally {
+      setPortfolioUploading(false);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -775,6 +863,105 @@ export default function MyAccount() {
 
               {/* Card Body */}
               <form onSubmit={handleTaskerSubmit} className="p-6">
+                  {/* Portfolio Section */}
+                  <div className="mb-8">
+                    <h3 className="text-base font-semibold text-indigo-900 mb-2">Портфолио (до 10 изображения)</h3>
+                    {portfolioSuccess && (
+                      <div className="mb-2 text-green-600 text-sm">{portfolioSuccess}</div>
+                    )}
+                    {portfolioError && (
+                      <div className="mb-2 text-red-600 text-sm">{portfolioError}</div>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {portfolioImages.length > 0 ? (
+                          portfolioImages.map((img, idx) => (
+                            <div key={idx} className="relative group">
+                              <img
+                                src={img}
+                                alt={`portfolio-${idx}`}
+                                className={`w-24 h-24 object-cover rounded border-2 shadow cursor-pointer transition-all ${
+                                  selectedForDeletion.has(img)
+                                    ? 'border-red-500 opacity-60'
+                                    : 'border-gray-200 hover:border-indigo-300'
+                                }`}
+                                onClick={() => isEditingTasker && toggleImageSelection(img)}
+                              />
+                              {isEditingTasker && (
+                                <div
+                                  className={`absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
+                                    selectedForDeletion.has(img)
+                                      ? 'bg-red-500 text-white'
+                                      : 'bg-white/80 text-gray-400 group-hover:bg-white group-hover:text-gray-600'
+                                  }`}
+                                  onClick={() => toggleImageSelection(img)}
+                                >
+                                  {selectedForDeletion.has(img) ? (
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  ) : (
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-gray-500 text-sm">Няма качени изображения.</span>
+                        )}
+                      </div>
+                      {isEditingTasker && selectedForDeletion.size > 0 && (
+                        <button
+                          type="button"
+                          onClick={handlePortfolioDelete}
+                          disabled={portfolioDeleting}
+                          className="mt-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed w-fit"
+                        >
+                          {portfolioDeleting
+                            ? 'Изтриване...'
+                            : `Изтрий избраните (${selectedForDeletion.size})`}
+                        </button>
+                      )}
+                      {isEditingTasker && (
+                        <div className="flex flex-col gap-2">
+                          <label htmlFor="portfolio-files" className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer w-fit">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            Добави изображения
+                          </label>
+                          <input
+                            type="file"
+                            id="portfolio-files"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handlePortfolioFilesChange}
+                            disabled={portfolioUploading || portfolioImages.length >= 10}
+                          />
+                          {portfolioFiles.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {portfolioFiles.map((file, idx) => (
+                                <span key={idx} className="text-xs text-indigo-900 bg-indigo-50 border border-indigo-200 rounded px-2 py-1">{file.name}</span>
+                              ))}
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handlePortfolioUpload}
+                            disabled={portfolioUploading || portfolioFiles.length === 0}
+                            className="mt-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {portfolioUploading ? 'Качване...' : 'Качи изображения'}
+                          </button>
+                          <p className="text-xs text-gray-500 mt-1">Може да качите до 10 изображения общо. Приети формати: JPG, PNG, GIF.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 {/* Profile Image Preview */}
                 {taskerProfile?.profile_image_url && (
                   <div className="mb-6 flex justify-center">

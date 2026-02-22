@@ -284,7 +284,7 @@ export default function Home() {
         <meta name="description" content="TaskTrust - Платформа за домашни услуги" />
       </Head>
 
-      <main className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 sm:px-4 sm:py-0">
         {/* Hero Section - Only for non-tasker and non-admin users */}
         {userRole !== Role.tasker && userRole !== Role.admin && userRole !== Role.client && (
           <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 text-white">
@@ -328,7 +328,7 @@ export default function Home() {
                 </p>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-12">
+              <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 md:gap-6 mb-8 md:mb-12">
                 {categories.map((category) => {
                   // Category icon mapping
                   const getCategoryIcon = (name: string) => {
@@ -412,7 +412,7 @@ export default function Home() {
                 {categories.find(c => c.id === activeCategory)?.name || 'Услуги'}
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {filteredServices.map((service) => (
                   <button
                     key={service.id}
@@ -454,7 +454,7 @@ export default function Home() {
               </div>
 
               {filteredServices.length === 0 && (
-                <div className="text-center py-16 bg-gray-50 rounded-xl">
+                <div className="text-center py-10 sm:py-16 bg-gray-50 rounded-xl">
                   <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                   </svg>
@@ -479,7 +479,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
                 {/* Feature 1 */}
                 <div className="text-center p-6">
                   <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -600,7 +600,7 @@ export default function Home() {
                   <p className="text-gray-500 text-sm mt-1">Чакащите и приетите резервации ще се показват тук</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {taskerBookings.map((booking) => (
                     <TaskerBookingCard
                       key={booking.id}
@@ -624,7 +624,7 @@ export default function Home() {
             <AdminsTable />
           </div>
         )}
-      </main>
+      </div>
 
       {/* Booking Modal */}
       <BookingModal

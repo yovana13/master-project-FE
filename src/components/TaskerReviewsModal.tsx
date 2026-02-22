@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getPortfolioImages } from '../services/portfolioService';
 
 interface Reviewer {
   id: string;
@@ -65,12 +66,29 @@ export default function TaskerReviewsModal({
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [portfolioImages, setPortfolioImages] = useState<string[]>([]);
+  const [portfolioLoading, setPortfolioLoading] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && taskerId) {
       fetchReviews();
+      fetchPortfolio();
     }
   }, [isOpen, taskerId]);
+
+  const fetchPortfolio = async () => {
+    try {
+      setPortfolioLoading(true);
+      const images = await getPortfolioImages(taskerId.toString());
+      setPortfolioImages(images);
+    } catch (err) {
+      // silently ignore — portfolio is optional
+      setPortfolioImages([]);
+    } finally {
+      setPortfolioLoading(false);
+    }
+  };
 
   const fetchReviews = async () => {
     try {
@@ -163,8 +181,55 @@ export default function TaskerReviewsModal({
           </div>
         </div>
 
-        {/* Reviews List */}
+        {/* Portfolio & Reviews */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Portfolio Section */}
+          {portfolioLoading ? (
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Портфолио</h4>
+              <div className="text-gray-500 text-sm">Зареждане...</div>
+            </div>
+          ) : portfolioImages.length > 0 ? (
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">Портфолио ({portfolioImages.length})</h4>
+              <div className="flex flex-wrap gap-2">
+                {portfolioImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`portfolio-${idx + 1}`}
+                    className="w-20 h-20 object-cover rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:opacity-80 hover:shadow-md transition-all"
+                    onClick={() => setLightboxImage(img)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Lightbox */}
+          {lightboxImage && (
+            <div
+              className="fixed inset-0 z-[60] bg-black bg-opacity-80 flex items-center justify-center p-4"
+              onClick={() => setLightboxImage(null)}
+            >
+              <button
+                onClick={() => setLightboxImage(null)}
+                className="absolute top-4 right-4 text-white hover:text-gray-300 z-[61]"
+              >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <img
+                src={lightboxImage}
+                alt="Portfolio full"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+
+          {/* Reviews List */}
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-gray-600">Зареждане на отзиви...</div>

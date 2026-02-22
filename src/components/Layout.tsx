@@ -92,7 +92,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <Fragment>
       <Header />
-      <main className="min-h-screen">
+      <main className="min-h-screen sm:px-4 sm:py-0">
         {children}
       </main>
       <Footer />

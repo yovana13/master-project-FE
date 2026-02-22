@@ -11,6 +11,7 @@ interface Service {
   description: string;
   pricing_model: 'hourly' | 'sq_m';
   category_id: number;
+  average_price?: number;
 }
 
 interface TaskerService {
@@ -590,6 +591,11 @@ export default function MyServices() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="50.00"
                   />
+                  {typeof selectedService.average_price === 'number' && (
+                    <div className="mt-2 text-xs text-gray-500 bg-blue-50 rounded p-2">
+                      Средна цена за тази услуга: <b>{(selectedService.average_price / 100).toFixed(2)} евро/час</b>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -610,6 +616,11 @@ export default function MyServices() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="3.00"
                     />
+                    {typeof selectedService.average_price === 'number' && (
+                      <div className="mt-2 text-xs text-gray-500 bg-blue-50 rounded p-2">
+                        Средна цена за тази услуга: <b>{(selectedService.average_price / 100).toFixed(2)} евро/м²</b>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="timePerSqM" className="block text-sm font-medium text-gray-700 mb-1">
@@ -717,6 +728,11 @@ export default function MyServices() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     placeholder="50.00"
                   />
+                  {typeof editServiceDetails.average_price === 'number' && (
+                    <div className="mt-2 text-xs text-gray-500 bg-blue-50 rounded p-2">
+                      Средна цена за тази услуга: <b>{(editServiceDetails.average_price / 100).toFixed(2)} евро/час</b>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -737,6 +753,11 @@ export default function MyServices() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="3.00"
                     />
+                    {typeof editServiceDetails.average_price === 'number' && (
+                      <div className="mt-2 text-xs text-gray-500 bg-blue-50 rounded p-2">
+                        Средна цена за тази услуга: <b>{(editServiceDetails.average_price / 100).toFixed(2)} евро/м²</b>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="editTimePerSqM" className="block text-sm font-medium text-gray-700 mb-1">
