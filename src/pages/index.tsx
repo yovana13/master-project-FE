@@ -8,6 +8,7 @@ import InfoMessage from '../components/InfoMessage'
 import AdminsTable from '../components/AdminsTable'
 import BookingModal from '../components/BookingModal'
 import TaskerBookingCard from '../components/TaskerBookingCard'
+import { getTaskerPendingAcceptedBookings, updateBookingStatus, cancelBooking, completeBooking } from '../services/bookingService'
 
 interface Category {
   id: number;
@@ -132,16 +133,9 @@ export default function Home() {
 
   const fetchTaskerBookings = async () => {
     if (!userId) return;
-    
     try {
       setLoadingBookings(true);
-      const response = await fetch(`http://localhost:3007/bookings/pending-accepted/tasker/${userId}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch tasker bookings');
-      }
-      
-      const data = await response.json();
+      const data = await getTaskerPendingAcceptedBookings(userId);
       setTaskerBookings(data);
     } catch (error) {
       console.error('Failed to fetch tasker bookings:', error);
@@ -153,19 +147,7 @@ export default function Home() {
 
   const handleAcceptBooking = async (bookingId: string) => {
     try {
-      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'accepted' }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to accept booking');
-      }
-
-      // Refresh the bookings list
+      await updateBookingStatus(bookingId, 'accepted');
       await fetchTaskerBookings();
       setInfoMessage({ text: 'Booking accepted successfully!', type: 'success' });
     } catch (error) {
@@ -176,19 +158,7 @@ export default function Home() {
 
   const handleDeclineBooking = async (bookingId: string) => {
     try {
-      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 'declined' }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to decline booking');
-      }
-
-      // Refresh the bookings list
+      await updateBookingStatus(bookingId, 'declined');
       await fetchTaskerBookings();
       setInfoMessage({ text: 'Booking declined successfully!', type: 'success' });
     } catch (error) {
@@ -199,15 +169,7 @@ export default function Home() {
 
   const handleCancelBooking = async (bookingId: string) => {
     try {
-      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/cancel`, {
-        method: 'PATCH',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to cancel booking');
-      }
-
-      // Refresh the bookings list
+      await cancelBooking(bookingId);
       await fetchTaskerBookings();
       setInfoMessage({ text: 'Booking cancelled successfully!', type: 'success' });
     } catch (error) {
@@ -218,18 +180,7 @@ export default function Home() {
 
   const handleCompleteBooking = async (bookingId: string) => {
     try {
-      const response = await fetch(`http://localhost:3007/bookings/${bookingId}/complete`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to complete booking');
-      }
-
-      // Refresh the bookings list
+      await completeBooking(bookingId);
       await fetchTaskerBookings();
       setInfoMessage({ text: 'Booking marked as complete!', type: 'success' });
     } catch (error) {

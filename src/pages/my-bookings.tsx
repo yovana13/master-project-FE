@@ -305,8 +305,15 @@ export default function MyBookings() {
     return statusMap[status] || status;
   };
 
-  const canEdit = (status: Booking['status']) => {
-    return status === 'pending' || status === 'accepted';
+  const isMoreThan24HoursBeforeStart = (startsAt: string) => {
+    const now = new Date();
+    const startTime = new Date(startsAt);
+    const hoursUntilStart = (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    return hoursUntilStart > 24;
+  };
+
+  const canEdit = (booking: Booking) => {
+    return (booking.status === 'pending' || booking.status === 'accepted') && isMoreThan24HoursBeforeStart(booking.startsAt);
   };
 
   const renderBookingCard = (booking: Booking) => {
@@ -321,7 +328,7 @@ export default function MyBookings() {
             service: booking.service || { id: '', name: 'Услуга' }
           }}
           showActions={booking.status === 'pending'}
-          showEditReport={canEdit(booking.status)}
+          showEditReport={canEdit(booking)}
           onAccept={handleAcceptBooking}
           onDecline={handleDeclineBooking}
           onCancel={handleCancelBooking}
@@ -494,7 +501,7 @@ export default function MyBookings() {
       </div>
 
       {/* Edit and Report Buttons */}
-      {canEdit(booking.status) && (
+      {canEdit(booking) && (
         <div className="mt-4 pt-4 border-t border-gray-200 flex gap-2">
           <button
             onClick={() => handleEdit(booking)}

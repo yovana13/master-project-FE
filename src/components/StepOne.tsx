@@ -158,7 +158,7 @@ export default function StepOne({
         
         <div>
           <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-            Биография
+            Биография*
           </label>
           <textarea
             id="bio"
@@ -174,7 +174,7 @@ export default function StepOne({
 
         <div>
           <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-            Адрес
+            Адрес*
           </label>
           <input
             id="address"

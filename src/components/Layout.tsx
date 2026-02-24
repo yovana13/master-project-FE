@@ -111,9 +111,9 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">
-                      {warnings.length === 1 ? 'Warning Notice' : `${warnings.length} Warning Notices`}
+                      {warnings.length === 1 ? 'Предупреждение' : `${warnings.length} Предупреждения`}
                     </h3>
-                    <p className="text-sm text-gray-600">Please review the following warning{warnings.length > 1 ? 's' : ''}</p>
+                    <p className="text-sm text-gray-600">Моля, прегледайте следното предупреждени{warnings.length > 1 ? 'я' : 'е'}</p>
                   </div>
                 </div>
                 <button
@@ -131,7 +131,7 @@ export default function Layout({ children }: LayoutProps) {
                   <div key={warning.id} className="border border-yellow-200 bg-yellow-50 rounded-lg p-4">
                     <div className="flex items-start justify-between mb-2">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">
-                        Warning #{index + 1}
+                        Предупреждение #{index + 1}
                       </span>
                       <span className="text-xs text-gray-600">{formatDate(warning.createdAt)}</span>
                     </div>
@@ -142,8 +142,8 @@ export default function Layout({ children }: LayoutProps) {
 
               <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-800">
-                  <strong>Important:</strong> Repeated violations may result in temporary account suspension or permanent ban. 
-                  Please review our community guidelines and terms of service.
+                  <strong>Важно:</strong> Повторните нарушения могат да доведат до временно спиране на акаунта или постоянно блокиране. 
+                  Моля, прегледайте нашите насоки за общността и условията за ползване.
                 </p>
               </div>
 
@@ -153,7 +153,7 @@ export default function Layout({ children }: LayoutProps) {
                   disabled={acknowledging}
                   className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {acknowledging ? 'Processing...' : 'I Understand'}
+                  {acknowledging ? 'Обработка...' : 'Разбирам'}
                 </button>
               </div>
             </div>

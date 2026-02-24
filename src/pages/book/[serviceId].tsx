@@ -6,6 +6,7 @@ import BookingCalendar from '../../components/BookingCalendar'
 import TaskerReviewsModal from '../../components/TaskerReviewsModal'
 import ReportUserModal from '../../components/ReportUserModal'
 import { CITIES_BULGARIA } from '../../constants/cities'
+import { calculateBookingTime, createBooking } from '../../services/bookingService'
 
 interface BookingData {
   serviceId: number;
@@ -167,15 +168,7 @@ export default function BookService() {
     if (bookingData?.pricingModel === 'sq_m' && bookingData.squareMeters) {
       try {
         setCalculatingTime(true);
-        const response = await fetch(
-          `http://localhost:3007/bookings/calculate-time/${taskerId}/${serviceId}?sqMeters=${bookingData.squareMeters}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to calculate time');
-        }
-
-        const data = await response.json();
+        const data = await calculateBookingTime(taskerId, serviceId as string, bookingData.squareMeters!);
         setCalculatedHours(data.hourlyEquivalent);
         setShowCalendar(true);
       } catch (err) {
@@ -246,20 +239,7 @@ export default function BookService() {
         details: bookingData.additionalDescription || ''
       };
 
-      const response = await fetch('http://localhost:3007/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingRequest),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to create booking' }));
-        throw new Error(errorData.message || 'Failed to create booking');
-      }
-
-      const booking = await response.json();
+      const booking = await createBooking(bookingRequest);
       
       // Clear booking data from sessionStorage
       sessionStorage.removeItem('bookingData');

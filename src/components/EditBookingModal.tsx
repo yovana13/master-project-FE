@@ -88,7 +88,7 @@ export default function EditBookingModal({
       setError(null);
       
       const response = await fetch(
-        `http://localhost:3007/bookings/available-slots/${taskerId}?startDate=${start}&endDate=${end}`
+        `http://localhost:3007/bookings/available-slots/${taskerId}?startDate=${start}&endDate=${end}&excludeBookingId=${booking.id}`
       );
 
       if (!response.ok) {

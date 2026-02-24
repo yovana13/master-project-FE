@@ -351,24 +351,26 @@ export default function BookingHistory() {
                     </div>
                   )}
 
-                  {/* Review Button for Completed Bookings */}
-                  {booking.status === 'completed' && (
+                  {/* Review Button for Completed and No Show Bookings */}
+                  {(booking.status === 'completed' || booking.status === 'no_show') && (
                     <div className="pt-4 border-t border-gray-200 mt-4 space-y-2">
-                      {(userRole === Role.tasker && booking.reviewStatus?.hasTaskerReview) || 
-                       (userRole === Role.client && booking.reviewStatus?.hasUserReview) ? (
-                        <button
-                          onClick={() => handleViewReview(booking)}
-                          className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
-                        >
-                          Преглед на вашия отзив
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleLeaveReview(booking)}
-                          className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
-                        >
-                          Оставете отзив
-                        </button>
+                      {(booking.status === 'completed' || (booking.status === 'no_show' && userRole === Role.client)) && (
+                        (userRole === Role.tasker && booking.reviewStatus?.hasTaskerReview) || 
+                        (userRole === Role.client && booking.reviewStatus?.hasUserReview) ? (
+                          <button
+                            onClick={() => handleViewReview(booking)}
+                            className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors"
+                          >
+                            Преглед на вашия отзив
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleLeaveReview(booking)}
+                            className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition-colors"
+                          >
+                            Оставете отзив
+                          </button>
+                        )
                       )}
                       
                       {/* Report User Button */}

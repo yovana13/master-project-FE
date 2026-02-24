@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import ClientReviewsModal from './ClientReviewsModal';
+
 interface User {
   id: string;
   name: string;
@@ -50,6 +53,8 @@ export default function TaskerBookingCard({
   showActions = true,
   showEditReport = false
 }: TaskerBookingCardProps) {
+  const [showClientReviews, setShowClientReviews] = useState(false);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('bg-BG', {
@@ -141,13 +146,21 @@ export default function TaskerBookingCard({
         {booking.user && booking.user.name && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0">
+              <div
+                className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-400 transition-all"
+                onClick={() => setShowClientReviews(true)}
+                title="Виж отзиви за клиента"
+              >
                 <span className="text-xl text-blue-700">
                   {booking.user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 mb-1">
+                <p
+                  className="text-sm font-semibold text-gray-900 mb-1 cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => setShowClientReviews(true)}
+                  title="Виж отзиви за клиента"
+                >
                   {booking.user.name}
                 </p>
                 <p className="text-xs text-blue-600 font-medium mb-2">Информация за клиента</p>
@@ -249,7 +262,7 @@ export default function TaskerBookingCard({
       )}
 
       {/* Cancel Button */}
-      {onCancel && (booking.status === 'pending' || booking.status === 'accepted') && isMoreThan24HoursBeforeStart() && (
+      {onCancel && booking.status === 'accepted' && isMoreThan24HoursBeforeStart() && (
         <div className="mt-4">
           <button
             onClick={() => onCancel(booking.id)}
@@ -276,6 +289,16 @@ export default function TaskerBookingCard({
             Завърши резервация
           </button>
         </div>
+      )}
+
+      {/* Client Reviews Modal */}
+      {booking.user && (
+        <ClientReviewsModal
+          isOpen={showClientReviews}
+          userId={booking.userId}
+          userName={booking.user.name}
+          onClose={() => setShowClientReviews(false)}
+        />
       )}
     </div>
   );

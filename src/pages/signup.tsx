@@ -15,6 +15,24 @@ export default function Signup() {
   const router = useRouter();
   const ctx = useContext(AuthContext);
 
+  const translateError = (message: string): string => {
+    if (/phone number .+ is already taken/i.test(message)) {
+      const phone = message.match(/phone number (.+?) is/i)?.[1] || '';
+      return `Телефонен номер ${phone} вече е зает`;
+    }
+    if (/email .+ is already taken/i.test(message)) {
+      const email = message.match(/email (.+?) is/i)?.[1] || '';
+      return `Имейл ${email} вече е зает`;
+    }
+    if (/already taken/i.test(message)) {
+      return 'Тази стойност вече е заета';
+    }
+    if (/signup failed/i.test(message)) {
+      return 'Регистрацията не успя. Моля, опитайте отново.';
+    }
+    return message;
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -67,7 +85,8 @@ export default function Signup() {
         router.push('/');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Регистрацията не успя. Моля, опитайте отново.');
+      const msg = err instanceof Error ? err.message : 'Регистрацията не успя. Моля, опитайте отново.';
+      setError(translateError(msg));
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +119,8 @@ export default function Signup() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Моля, попълнете това поле')}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Иван Иванов"
               />
@@ -117,6 +138,15 @@ export default function Signup() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onInvalid={(e) => {
+                  const input = e.target as HTMLInputElement;
+                  if (input.validity.valueMissing) {
+                    input.setCustomValidity('Моля, попълнете това поле');
+                  } else if (input.validity.typeMismatch) {
+                    input.setCustomValidity('Моля, въведете валиден имейл адрес');
+                  }
+                }}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="ivan@example.com"
               />
@@ -133,6 +163,8 @@ export default function Signup() {
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Моля, попълнете това поле')}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="+441234567890"
               />
@@ -168,6 +200,8 @@ export default function Signup() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Моля, попълнете това поле')}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="••••••••"
               />
@@ -185,6 +219,8 @@ export default function Signup() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity('Моля, попълнете това поле')}
+                onInput={(e) => (e.target as HTMLInputElement).setCustomValidity('')}
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="••••••••"
               />

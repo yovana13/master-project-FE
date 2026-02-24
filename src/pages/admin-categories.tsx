@@ -520,7 +520,7 @@ export default function AdminCategories() {
                 {/* Average Price */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Средна цена (лв.) *
+                    Средна цена *
                   </label>
                   <input
                     type="number"
